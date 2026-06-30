@@ -234,31 +234,6 @@ Release assets are written to:
 release-bundles/github-release-assets/
 ```
 
-## GitHub Releases
-
-This repository includes a release workflow in `.github/workflows/release.yml`.
-
-The clean release flow is:
-
-```powershell
-git checkout main
-git pull
-git tag v0.8.0
-git push origin v0.8.0
-```
-
-When GitHub receives the tag, Actions builds the Windows binaries and attaches them to a GitHub Release.
-
-For a new version:
-
-1. Update the version in `UI/package.json` and `pyproject.toml`.
-2. Merge your branch into `main`.
-3. Create a matching tag, for example `v0.9.0`.
-4. Push the tag.
-5. Check the Releases panel for the generated installer and portable files.
-
-I recommend tag-based publishing instead of publishing a public release on every merge. It keeps the Releases page clean and avoids uploading accidental test builds.
-
 ## Roadmap
 
 Wallwize 0.8.0 is the first public-friendly release. It already works as a local wallpaper organizer, but the next version is where I want the app to feel much more comfortable for daily use.
