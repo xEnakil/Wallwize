@@ -1,0 +1,12 @@
+{
+  "name": "wallwize-local-vision",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "scripts": {
+    "release:win": "powershell -ExecutionPolicy Bypass -File ./scripts/build-release.ps1"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.8.1"
+  }
+}

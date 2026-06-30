@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wallwize"
+version = "0.8.0"
+description = "Local-first wallpaper analysis and organization app."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "Pillow>=10",
+]
+
+[project.scripts]
+wallwize = "wallwize.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"wallwize.classification.vision" = ["*.mjs"]
