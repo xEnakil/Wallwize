@@ -1,0 +1,66 @@
+Wallwize Source-Available License v1.0
+
+Copyright (c) 2026 Wallwize contributors.
+All rights reserved.
+
+This software, including its source code, compiled binaries, artwork, logos,
+documentation, and other project files, is made available for viewing and
+personal evaluation only.
+
+1. Permission Granted
+
+You may:
+
+- View the source code in this repository.
+- Download or clone one copy for personal review, testing, security research,
+  or issue reporting.
+- Run official Wallwize binaries published by the copyright holder for personal
+  use.
+- Reference the Wallwize name only to identify the original project.
+
+2. Restrictions
+
+You may not, without prior written permission from the copyright holder:
+
+- Fork this repository or publish a copy of it.
+- Redistribute, mirror, reupload, sublicense, sell, rent, lease, or otherwise
+  make the software available to others.
+- Publish modified versions, derivative works, patches, or compiled builds.
+- Use any part of the source code in another project, product, service, or
+  repository.
+- Remove or alter copyright, license, attribution, or branding notices.
+- Use the Wallwize name, logo, icon, or branding in a way that suggests
+  endorsement, ownership, or an official relationship.
+
+3. Issues And Feedback
+
+You may open issues, report bugs, request features, and provide written feedback
+through the official project repository.
+
+Unless a separate written agreement says otherwise, any suggestions, ideas, bug
+reports, or other feedback you submit may be used by the copyright holder without
+restriction or compensation.
+
+This license does not grant permission to submit or publish code contributions,
+modified source, forks, or derivative works.
+
+4. Third-Party Software
+
+Third-party dependencies included with or used by Wallwize remain governed by
+their own licenses. This license applies only to Wallwize project files owned by
+the copyright holder.
+
+5. Termination
+
+Any permission granted by this license terminates automatically if you violate
+its terms. After termination, you must stop using the software and delete any
+copies in your possession or control.
+
+6. No Warranty
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OF THE SOFTWARE.

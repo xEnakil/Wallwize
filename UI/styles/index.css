@@ -1,0 +1,317 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* ================================================================
+   Midnight Canvas · Iris Glass Design System · Wallwize
+   ================================================================ */
+
+/* ── Dark mode tokens (default) ────────────────────────────────── */
+:root {
+  --w-bg-void:         #06080E;
+  --w-bg-base:         #0C0F18;
+  --w-bg-surface:      #111521;
+  --w-bg-raised:       #161B28;
+  --w-bg-interactive:  #1C2133;
+  --w-bg-active:       #212745;
+
+  --w-border-faint:    rgba(148, 163, 200, 0.05);
+  --w-border-default:  rgba(148, 163, 200, 0.09);
+  --w-border-strong:   rgba(148, 163, 200, 0.20);
+
+  --w-text-100: #E2E8F9;
+  --w-text-70:  #7C8DB5;
+  --w-text-40:  #3A4B65;
+
+  --w-iris:        #6366F1;
+  --w-iris-dim:    #4F46E5;
+  --w-iris-bright: #818CF8;
+  --w-iris-tint:   rgba(99,  102, 241, 0.12);
+  --w-iris-glow:   rgba(99,  102, 241, 0.26);
+
+  --w-emerald:      #10B981;
+  --w-emerald-tint: rgba(16,  185, 129, 0.12);
+  --w-amber:        #F59E0B;
+  --w-amber-tint:   rgba(245, 158,  11, 0.12);
+  --w-rose:         #F43F5E;
+  --w-rose-tint:    rgba(244,  63,  94, 0.12);
+}
+
+/* ── Light mode override ────────────────────────────────────────── */
+.ww-light {
+  --w-bg-void:         #EDF1FF;
+  --w-bg-base:         #F4F7FF;
+  --w-bg-surface:      #FFFFFF;
+  --w-bg-raised:       #FFFFFF;
+  --w-bg-interactive:  #EDF0FF;
+  --w-bg-active:       #E1E7FF;
+
+  --w-border-faint:    rgba(30,  41, 80, 0.05);
+  --w-border-default:  rgba(30,  41, 80, 0.09);
+  --w-border-strong:   rgba(30,  41, 80, 0.20);
+
+  --w-text-100: #0F172A;
+  --w-text-70:  #475569;
+  --w-text-40:  #94A3B8;
+
+  --w-iris:        #4F46E5;
+  --w-iris-dim:    #4338CA;
+  --w-iris-bright: #6366F1;
+  --w-iris-tint:   rgba(79,  70, 229, 0.08);
+  --w-iris-glow:   rgba(79,  70, 229, 0.18);
+
+  --w-emerald:      #059669;
+  --w-emerald-tint: rgba(5,  150, 105, 0.08);
+  --w-amber:        #D97706;
+  --w-amber-tint:   rgba(217, 119,   6, 0.10);
+  --w-rose:         #E11D48;
+  --w-rose-tint:    rgba(225,  29,  72, 0.10);
+}
+
+/* ── Base reset ─────────────────────────────────────────────────── */
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--w-bg-void);
+  font-family: 'Segoe UI Variable Display', 'Segoe UI Variable Text',
+    'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-color: var(--w-bg-interactive) var(--w-bg-base);
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar            { width: 7px; height: 7px; }
+*::-webkit-scrollbar-track      { background: var(--w-bg-base); }
+*::-webkit-scrollbar-thumb      {
+  min-height: 40px;
+  border: 2px solid var(--w-bg-base);
+  border-radius: 999px;
+  background: var(--w-bg-interactive);
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--w-text-40); }
+*::-webkit-scrollbar-corner      { background: var(--w-bg-base); }
+
+button, img { -webkit-user-select: none; user-select: none; }
+
+/* ── Window chrome ─────────────────────────────────────────────── */
+.wallwize-window-shell {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--w-border-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.wallwize-titlebar,
+.wallwize-titlebar-drag {
+  app-region: drag;
+  -webkit-app-region: drag;
+}
+.wallwize-window-controls,
+.wallwize-window-controls button,
+button, input, select, textarea {
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+
+/* ── Nav item ──────────────────────────────────────────────────── */
+.ww-nav-item {
+  color: var(--w-text-70);
+  background: transparent;
+  border-radius: 8px;
+  transition: background 0.12s ease, color 0.12s ease;
+  cursor: pointer;
+}
+.ww-nav-item:hover {
+  background: var(--w-bg-interactive);
+  color: var(--w-text-100);
+}
+.ww-nav-active {
+  color: var(--w-text-100) !important;
+  background: var(--w-iris-tint) !important;
+  box-shadow: inset 3px 0 0 var(--w-iris) !important;
+}
+.ww-nav-active .ww-nav-icon {
+  color: var(--w-iris-bright) !important;
+}
+
+/* ── Primary action button ─────────────────────────────────────── */
+.ww-btn-primary {
+  background: var(--w-iris);
+  color: white;
+  border: none;
+  box-shadow: 0 1px 6px var(--w-iris-glow), 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.15s ease, box-shadow 0.15s ease, transform 0.10s ease;
+  cursor: pointer;
+}
+.ww-btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
+  box-shadow: 0 3px 16px var(--w-iris-glow), 0 1px 3px rgba(0, 0, 0, 0.30);
+  transform: translateY(-1px);
+}
+.ww-btn-primary:active:not(:disabled) { transform: translateY(0); }
+.ww-btn-primary:disabled { opacity: 0.35; box-shadow: none; cursor: not-allowed; }
+
+/* ── Ghost button ──────────────────────────────────────────────── */
+.ww-btn-ghost {
+  background: var(--w-bg-interactive);
+  color: var(--w-text-100);
+  border: 1px solid var(--w-border-default);
+  transition: background 0.12s ease, border-color 0.12s ease;
+  cursor: pointer;
+}
+.ww-btn-ghost:hover:not(:disabled) {
+  background: var(--w-bg-active);
+  border-color: var(--w-border-strong);
+}
+.ww-btn-ghost:disabled { opacity: 0.38; cursor: not-allowed; }
+
+/* ── Success button ────────────────────────────────────────────── */
+.ww-btn-success {
+  background: var(--w-emerald-tint);
+  color: var(--w-emerald);
+  border: 1px solid var(--w-emerald-tint);
+  transition: background 0.12s ease, opacity 0.12s ease;
+  cursor: pointer;
+}
+.ww-btn-success:hover:not(:disabled) {
+  background: var(--w-emerald);
+  color: white;
+  border-color: var(--w-emerald);
+}
+.ww-btn-success:disabled { opacity: 0.38; cursor: not-allowed; }
+
+/* ── Chip / filter pill ────────────────────────────────────────── */
+.ww-chip {
+  background: var(--w-bg-interactive);
+  color: var(--w-text-70);
+  border: 1px solid var(--w-border-default);
+  border-radius: 999px;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ww-chip:hover {
+  background: var(--w-bg-active);
+  color: var(--w-text-100);
+  border-color: var(--w-border-strong);
+}
+.ww-chip-active {
+  background: var(--w-iris-tint) !important;
+  color: var(--w-iris-bright) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+/* ── Wallpaper card ────────────────────────────────────────────── */
+.wallwize-wallpaper-card {
+  contain: strict;
+  transform: translateZ(0);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.wallwize-wallpaper-card:hover {
+  transform: translateZ(0) scale(1.02);
+}
+
+/* ── Library scroll ────────────────────────────────────────────── */
+.wallwize-library-scroll {
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+/* ── Animations ────────────────────────────────────────────────── */
+.wallwize-indeterminate-bar {
+  width: 40%;
+  animation: ww-indeterminate 1.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  transform-origin: left center;
+}
+
+@keyframes ww-indeterminate {
+  0%   { transform: translateX(-125%) scaleX(0.8); opacity: 0.3; }
+  50%  { opacity: 1; }
+  100% { transform: translateX(270%) scaleX(1);   opacity: 0.35; }
+}
+
+@keyframes ww-fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ww-slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes ww-scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.ww-fade-in-up    { animation: ww-fade-in-up     0.22s ease-out both; }
+.ww-slide-in-right { animation: ww-slide-in-right 0.22s ease-out both; }
+.ww-scale-in      { animation: ww-scale-in        0.18s ease-out both; }
+
+/* ── Confidence bar gradient ───────────────────────────────────── */
+.ww-confidence-high   { background: var(--w-emerald); }
+.ww-confidence-medium { background: var(--w-amber); }
+.ww-confidence-low    { background: var(--w-rose); }
+
+/* ── Section label ─────────────────────────────────────────────── */
+.ww-section-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--w-text-40);
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* ── Input ─────────────────────────────────────────────────────── */
+.ww-input {
+  background: var(--w-bg-base);
+  border: 1px solid var(--w-border-default);
+  color: var(--w-text-100);
+  border-radius: 8px;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  outline: none;
+}
+.ww-input:focus {
+  border-color: var(--w-iris);
+  box-shadow: 0 0 0 3px var(--w-iris-tint);
+}
+.ww-input::placeholder { color: var(--w-text-40); }
+
+/* ── Card / panel ──────────────────────────────────────────────── */
+.ww-card {
+  background: var(--w-bg-raised);
+  border: 1px solid var(--w-border-default);
+  border-radius: 12px;
+}
+
+/* ── Range slider accent ───────────────────────────────────────── */
+input[type='range'] {
+  accent-color: var(--w-iris);
+  cursor: pointer;
+}
+
+/* ── Checkbox accent ───────────────────────────────────────────── */
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--w-iris);
+  cursor: pointer;
+}
+
+/* ── Table ─────────────────────────────────────────────────────── */
+.ww-table-row {
+  border-bottom: 1px solid var(--w-border-faint);
+  transition: background 0.10s ease;
+}
+.ww-table-row:hover {
+  background: var(--w-bg-interactive);
+}
