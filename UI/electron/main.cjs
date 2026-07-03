@@ -469,6 +469,9 @@ function wallpaperFromPlanItem(item, record) {
       prompt: candidate.prompt,
     })),
     filename: path.basename(item.source),
+    relativePath: record?.relative_path || path.basename(item.source),
+    sizeBytes: Number(record?.size_bytes || 0),
+    reason: item.reason || '',
     warnings: record?.warnings || [],
     tags: item.tags || record?.tags || [],
   };
@@ -491,6 +494,9 @@ function wallpaperFromRecord(record) {
     darkScore: Math.round(record.oled_score || 0),
     aiCandidates: [],
     filename: record.file_name,
+    relativePath: record.relative_path || record.file_name,
+    sizeBytes: Number(record.size_bytes || 0),
+    reason: 'Waiting for categorization',
     warnings: record.warnings || [],
     tags: record.tags || [],
   };
