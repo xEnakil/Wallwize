@@ -1,0 +1,14 @@
+/* Bundled locally: no Google Fonts or icon network request at runtime. */
+@import '@fontsource-variable/roboto-flex/index.css';
+@import 'material-symbols/rounded.css';
+
+.material-symbols-rounded {
+  flex: 0 0 auto;
+  overflow: hidden;
+  width: 1em;
+  height: 1em;
+  font-size: 1.25rem;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  -webkit-user-select: none;
+  user-select: none;
+}
