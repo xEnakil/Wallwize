@@ -1,75 +1,127 @@
-import { Brain, Copy, FolderOpen, Grid3x3, ListChecks, Settings, type LucideIcon } from 'lucide-react';
-import { ActiveView } from '../types';
+import { ActiveView, WallwizeStats } from '../types';
 
 interface SidebarProps {
   activeView: ActiveView;
   onViewChange: (view: ActiveView) => void;
-  stats: {
-    library: number;
-    reviewQueue: number;
-    categories: number;
-    duplicates: number;
-  };
+  stats: WallwizeStats;
+}
+
+interface NavItem {
+  id: ActiveView;
+  label: string;
+  icon: string;
+  badgeKey?: 'reviewQueue' | 'duplicates';
+}
+
+const wallwizeSymbolSrc = './assets/icons/wallwize-symbol-transparent-consistent.svg';
+
+const NAV_ITEMS: readonly NavItem[] = [
+  { id: 'library', label: 'Library', icon: 'photo_library' },
+  { id: 'review', label: 'Review', icon: 'assignment_turned_in', badgeKey: 'reviewQueue' },
+  { id: 'categories', label: 'Collections', icon: 'folder' },
+  { id: 'duplicates', label: 'Duplicates', icon: 'filter_none', badgeKey: 'duplicates' },
+  { id: 'ai', label: 'Rules & AI', icon: 'shield_with_heart' },
+  { id: 'settings', label: 'Settings', icon: 'settings' },
+] as const;
+
+// Item box height + vertical gap between items (gap-1.5 = 6px) -> slide stride.
+const ITEM_HEIGHT = 62;
+const ITEM_GAP = 6;
+const ITEM_STRIDE = ITEM_HEIGHT + ITEM_GAP;
+
+function formatBadge(count: number) {
+  return count > 99 ? '99+' : String(count);
 }
 
 export function Sidebar({ activeView, onViewChange, stats }: SidebarProps) {
-  const navItems: Array<{
-    id: ActiveView;
-    label: string;
-    icon: LucideIcon;
-    count?: number;
-  }> = [
-    { id: 'library',    label: 'Library',      icon: FolderOpen,  count: stats.library },
-    { id: 'review',     label: 'Review Queue', icon: ListChecks,  count: stats.reviewQueue },
-    { id: 'categories', label: 'Categories',   icon: Grid3x3,     count: stats.categories },
-    { id: 'duplicates', label: 'Duplicates',   icon: Copy,        count: stats.duplicates },
-    { id: 'ai',         label: 'AI Analysis',  icon: Brain },
-    { id: 'settings',   label: 'Settings',     icon: Settings },
-  ];
+  const activeIndex = Math.max(
+    0,
+    NAV_ITEMS.findIndex((item) => item.id === activeView),
+  );
 
   return (
-    <div
-      className="flex w-[220px] shrink-0 flex-col"
-      style={{
-        background: 'var(--w-bg-surface)',
-        borderRight: '1px solid var(--w-border-default)',
-      }}
+    <aside
+      className="ww-navigation-rail flex w-[108px] shrink-0 flex-col items-center"
+      style={{ background: 'var(--md-sys-color-surface-container-low)' }}
+      aria-label="Primary navigation"
     >
-      <nav className="flex-1 space-y-[2px] px-2 py-3">
-        {navItems.map((item) => {
-          const Icon = item.icon;
+      <div className="grid h-[92px] shrink-0 place-items-center" aria-label="Wallwize">
+        <div
+          className="ww-brand-mark grid size-14 place-items-center"
+          style={{
+            background: 'var(--md-sys-color-primary-container)',
+            color: 'var(--md-sys-color-on-primary-container)',
+            borderRadius: 'var(--md-sys-shape-corner-large-increased)',
+            boxShadow: 'var(--md-sys-elevation-level1)',
+          }}
+        >
+          <img src={wallwizeSymbolSrc} alt="" aria-hidden="true" draggable={false} className="size-9" />
+        </div>
+      </div>
+
+      <nav className="relative flex min-h-0 flex-1 flex-col items-stretch gap-1.5 self-stretch px-3 py-1">
+        {/* Sliding active pill — a transform-translated element with a spring
+            transition. Avoids Framer layout projection (keeps the main thread free). */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3 right-3 rounded-[22px]"
+          style={{
+            top: 4,
+            height: ITEM_HEIGHT,
+            background: 'var(--md-sys-color-secondary-container)',
+            transform: `translateY(${activeIndex * ITEM_STRIDE}px)`,
+            transition: `transform var(--md-sys-motion-spring-bouncy-soft-duration) var(--md-sys-motion-spring-bouncy-soft)`,
+          }}
+        />
+
+        {NAV_ITEMS.map((item) => {
           const isActive = activeView === item.id;
+          const count = item.badgeKey ? stats[item.badgeKey] : 0;
 
           return (
             <button
               key={item.id}
               type="button"
               onClick={() => onViewChange(item.id)}
-              className={`ww-nav-item w-full flex items-center justify-between px-3 py-[7px] text-left ${
-                isActive ? 'ww-nav-active' : ''
-              }`}
+              aria-current={isActive ? 'page' : undefined}
+              aria-label={item.label}
+              className="ww-nav-item-btn relative grid h-[62px] w-full place-items-center rounded-[22px] outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[var(--md-sys-color-primary)]"
+              style={{ color: isActive ? 'var(--md-sys-color-on-secondary-container)' : 'var(--md-sys-color-on-surface-variant)' }}
             >
-              <div className="flex items-center gap-2.5">
-                <Icon
-                  className={`ww-nav-icon size-[17px] shrink-0 transition-colors ${
-                    isActive ? '' : 'opacity-75'
-                  }`}
-                  style={isActive ? { color: 'var(--w-iris-bright)' } : undefined}
-                />
-                <span className="text-[13px] font-medium">{item.label}</span>
-              </div>
+              {!isActive && <span className="ww-nav-hover pointer-events-none absolute inset-0 rounded-[22px]" />}
 
-              {item.count !== undefined && item.count > 0 && (
+              <span className="relative z-[1] grid place-items-center gap-1">
                 <span
-                  className="rounded-full px-2 py-px text-[11px] font-semibold tabular-nums"
+                  className="material-symbols-rounded leading-none"
+                  aria-hidden="true"
                   style={{
-                    background: isActive ? 'var(--w-iris-tint)' : 'var(--w-bg-interactive)',
-                    color: isActive ? 'var(--w-iris-bright)' : 'var(--w-text-40)',
-                    border: '1px solid',
-                    borderColor: isActive ? 'rgba(99,102,241,0.2)' : 'var(--w-border-default)',
+                    fontSize: '25px',
+                    transform: isActive ? 'scale(1.06)' : 'scale(1)',
+                    transition: 'transform var(--md-sys-motion-spring-bouncy-duration) var(--md-sys-motion-spring-bouncy), font-variation-settings var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard)',
+                    fontVariationSettings: `'FILL' ${isActive ? 1 : 0}, 'wght' ${isActive ? 500 : 400}, 'GRAD' 0, 'opsz' 24`,
                   }}
                 >
-                  {item.count}
+                  {item.icon}
+                </span>
+                <span
+                  className="max-w-full truncate text-[11px] leading-none tracking-[0.01em]"
+                  style={{ fontWeight: isActive ? 700 : 500 }}
+                >
+                  {item.label}
+                </span>
+              </span>
+
+              {count > 0 && (
+                <span
+                  className="ww-pop absolute right-2 top-1.5 z-[2] grid min-h-[19px] min-w-[19px] place-items-center rounded-full px-1 text-[10px] font-bold leading-none tabular-nums"
+                  style={{
+                    background: 'var(--md-sys-color-error)',
+                    color: 'var(--md-sys-color-on-error)',
+                    border: '2px solid var(--md-sys-color-surface-container-low)',
+                  }}
+                  aria-label={`${count} ${item.label.toLowerCase()} items`}
+                >
+                  {formatBadge(count)}
                 </span>
               )}
             </button>
@@ -77,24 +129,29 @@ export function Sidebar({ activeView, onViewChange, stats }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer status */}
-      <div
-        className="px-4 py-3"
-        style={{ borderTop: '1px solid var(--w-border-faint)' }}
-      >
-        <div className="flex items-center gap-2 mb-1">
-          <div
-            className="size-[7px] rounded-full"
-            style={{ background: 'var(--w-emerald)', boxShadow: '0 0 4px var(--w-emerald)' }}
-          />
-          <span className="text-[11px] font-medium" style={{ color: 'var(--w-text-70)' }}>
-            Local processing only
+      <div className="grid h-[82px] shrink-0 place-items-center">
+        <div
+          className="ww-brand-mark relative grid size-12 place-items-center rounded-full"
+          style={{
+            background: 'var(--md-sys-color-tertiary-container)',
+            color: 'var(--md-sys-color-on-tertiary-container)',
+          }}
+          title="Your images stay on this device"
+          aria-label="Local processing only"
+        >
+          <span className="material-symbols-rounded text-[22px] leading-none" aria-hidden="true">
+            shield_lock
           </span>
-        </div>
-        <div className="text-[11px]" style={{ color: 'var(--w-text-40)' }}>
-          v0.8.0 · Privacy-first
+          <span
+            className="absolute bottom-0 right-0 size-3 rounded-full"
+            style={{
+              background: 'var(--md-sys-color-tertiary)',
+              border: '3px solid var(--md-sys-color-surface-container-low)',
+            }}
+            aria-hidden="true"
+          />
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
