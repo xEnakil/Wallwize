@@ -1,20 +1,18 @@
 import {
-  AlertCircle,
-  CheckCircle2,
-  ChevronDown,
-  FileCheck,
-  FileText,
-  FolderOpen,
-  Play,
-  Search,
-  SlidersHorizontal,
-  Sparkles,
-} from 'lucide-react';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+  memo,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { MaterialSymbol, MdFilledButton, MdIconButton } from '../material/components';
+import { BentoCard, MorphPill, PopBadge, Stagger, StaggerItem } from '../material/expressive';
+import { BusyTask, WallpaperItem, WallwizeSettings } from '../types';
 import { DetailsPanel } from './DetailsPanel';
 import { InlineTaskLabel } from './TaskStatus';
 import { WallpaperThumbnail } from './WallpaperThumbnail';
-import { BusyTask, WallpaperItem, WallwizeSettings } from '../types';
 
 interface LibraryActions {
   chooseSource: () => void;
@@ -36,21 +34,43 @@ interface LibraryViewProps {
   actions: LibraryActions;
 }
 
-const BASE_FILTERS = ['All', 'Needs Review', 'AI Confident', 'Low Confidence', 'Duplicates'];
-const SORT_OPTIONS = [
-  { value: 'confidence-desc', label: 'Confidence ↑' },
-  { value: 'confidence-asc',  label: 'Confidence ↓' },
-  { value: 'category',        label: 'Category' },
-  { value: 'name',            label: 'Name' },
-  { value: 'pure-black',      label: 'Pure Black' },
+type FilterTone = 'primary' | 'error' | 'secondary' | 'tertiary';
+
+const FILTER_TILES = [
+  { value: 'All', label: 'All', icon: 'apps', tone: 'primary', countKey: 'all' },
+  { value: 'Needs Review', label: 'Review', icon: 'rate_review', tone: 'error', countKey: 'review' },
+  { value: 'OLED', label: 'OLED', icon: 'contrast', tone: 'secondary', countKey: 'oled' },
+  { value: 'Duplicates', label: 'Duplicates', icon: 'content_copy', tone: 'tertiary', countKey: 'duplicates' },
 ] as const;
 
-const GRID_MIN_CARD_WIDTH = 190;
-const GRID_GAP = 10;
-const GRID_PADDING = 16;
+const SECONDARY_FILTERS = [
+  { value: 'AI Confident', label: 'AI confident' },
+  { value: 'Low Confidence', label: 'Low confidence' },
+] as const;
+
+const SORT_OPTIONS = [
+  { value: 'confidence-desc', label: 'Highest confidence' },
+  { value: 'confidence-asc', label: 'Lowest confidence' },
+  { value: 'category', label: 'Category' },
+  { value: 'name', label: 'Filename' },
+  { value: 'pure-black', label: 'Pure black coverage' },
+] as const;
+
+const GRID_MIN_CARD_WIDTH = 292;
+const GRID_GAP = 14;
+const GRID_HORIZONTAL_PADDING = 32;
+const GRID_TOP_PADDING = 8;
+const GRID_BOTTOM_PADDING = 32;
 const GRID_OVERSCAN_ROWS = 1;
 
-type SortValue = typeof SORT_OPTIONS[number]['value'];
+type PrimaryFilterValue = (typeof FILTER_TILES)[number]['value'];
+type SecondaryFilterValue = (typeof SECONDARY_FILTERS)[number]['value'];
+type FilterValue = PrimaryFilterValue | SecondaryFilterValue;
+type SortValue = (typeof SORT_OPTIONS)[number]['value'];
+
+function isSecondaryFilter(filter: FilterValue): filter is SecondaryFilterValue {
+  return SECONDARY_FILTERS.some((option) => option.value === filter);
+}
 
 export function LibraryView({
   wallpapers,
@@ -63,264 +83,374 @@ export function LibraryView({
   actions,
 }: LibraryViewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState<FilterValue>('All');
   const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query);
   const [sort, setSort] = useState<SortValue>('confidence-desc');
-  const [sortMenuOpen, setSortMenuOpen] = useState(false);
-  const sortMenuRef = useRef<HTMLDivElement | null>(null);
-  const filters = useMemo(
-    () => (wallpapers.some((w) => w.category === 'OLED') ? [...BASE_FILTERS, 'OLED'] : BASE_FILTERS),
-    [wallpapers],
-  );
+  const [viewMenuOpen, setViewMenuOpen] = useState(false);
+  const [actionMenuOpen, setActionMenuOpen] = useState(false);
+  const viewMenuRef = useRef<HTMLDivElement | null>(null);
+  const actionMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (filter === 'OLED' && !filters.includes('OLED')) setFilter('All');
-  }, [filter, filters]);
+    if (!viewMenuOpen && !actionMenuOpen) return;
 
-  useEffect(() => {
-    if (!sortMenuOpen) return;
-    const close = (e: PointerEvent) => {
-      if (!sortMenuRef.current?.contains(e.target as Node)) setSortMenuOpen(false);
+    const closeMenus = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!viewMenuRef.current?.contains(target)) setViewMenuOpen(false);
+      if (!actionMenuRef.current?.contains(target)) setActionMenuOpen(false);
     };
-    window.addEventListener('pointerdown', close);
-    return () => window.removeEventListener('pointerdown', close);
-  }, [sortMenuOpen]);
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setViewMenuOpen(false);
+      setActionMenuOpen(false);
+    };
+
+    window.addEventListener('pointerdown', closeMenus);
+    window.addEventListener('keydown', closeOnEscape);
+    return () => {
+      window.removeEventListener('pointerdown', closeMenus);
+      window.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [actionMenuOpen, viewMenuOpen]);
+
+  const filterCounts = useMemo(() => {
+    let review = 0;
+    let oled = 0;
+    let duplicates = 0;
+    for (const wallpaper of wallpapers) {
+      if (wallpaper.category === 'Needs Review') review += 1;
+      if (wallpaper.category === 'OLED') oled += 1;
+      if (wallpaper.warnings.some((warning) => warning.toLowerCase().includes('duplicate'))) duplicates += 1;
+    }
+    return { all: wallpapers.length, review, oled, duplicates };
+  }, [wallpapers]);
+
+  const reviewCount = filterCounts.review;
 
   const filteredWallpapers = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const filtered = wallpapers.filter((w) => {
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
+    const filtered = wallpapers.filter((wallpaper) => {
       const matchesQuery =
-        q.length === 0 ||
-        w.filename.toLowerCase().includes(q) ||
-        w.category.toLowerCase().includes(q) ||
-        w.tags.some((t) => t.toLowerCase().includes(q));
+        normalizedQuery.length === 0 ||
+        wallpaper.filename.toLowerCase().includes(normalizedQuery) ||
+        wallpaper.category.toLowerCase().includes(normalizedQuery) ||
+        wallpaper.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery));
+
       if (!matchesQuery) return false;
-      if (filter === 'OLED')           return w.category === 'OLED';
-      if (filter === 'Needs Review')   return w.category === 'Needs Review';
-      if (filter === 'AI Confident')   return w.source === 'AI Vision' && w.confidence >= 70;
-      if (filter === 'Low Confidence') return w.confidence < 70;
-      if (filter === 'Duplicates')     return w.warnings.some((warning) => warning.toLowerCase().includes('duplicate'));
+      if (filter === 'OLED') return wallpaper.category === 'OLED';
+      if (filter === 'Needs Review') return wallpaper.category === 'Needs Review';
+      if (filter === 'AI Confident') {
+        return wallpaper.source === 'AI Vision' && wallpaper.confidence >= 70;
+      }
+      if (filter === 'Low Confidence') return wallpaper.confidence < 70;
+      if (filter === 'Duplicates') {
+        return wallpaper.warnings.some((warning) => warning.toLowerCase().includes('duplicate'));
+      }
       return true;
     });
-    return [...filtered].sort((a, b) => {
-      if (sort === 'confidence-asc') return a.confidence - b.confidence;
-      if (sort === 'category')       return a.category.localeCompare(b.category) || a.filename.localeCompare(b.filename);
-      if (sort === 'name')           return a.filename.localeCompare(b.filename);
-      if (sort === 'pure-black')     return b.blackPixels - a.blackPixels || b.darkScore - a.darkScore;
-      return b.confidence - a.confidence;
+
+    return filtered.toSorted((first, second) => {
+      if (sort === 'confidence-asc') return first.confidence - second.confidence;
+      if (sort === 'category') {
+        return first.category.localeCompare(second.category) || first.filename.localeCompare(second.filename);
+      }
+      if (sort === 'name') return first.filename.localeCompare(second.filename);
+      if (sort === 'pure-black') {
+        return second.blackPixels - first.blackPixels || second.darkScore - first.darkScore;
+      }
+      return second.confidence - first.confidence;
     });
-  }, [wallpapers, query, filter, sort]);
+  }, [deferredQuery, filter, sort, wallpapers]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    const selectionStillVisible = filteredWallpapers.some((wallpaper) => wallpaper.id === selectedId);
+    if (!selectionStillVisible) setSelectedId(null);
+  }, [filteredWallpapers, selectedId]);
 
   const selectedWallpaper = selectedId
-    ? filteredWallpapers.find((w) => w.id === selectedId) || null
+    ? filteredWallpapers.find((wallpaper) => wallpaper.id === selectedId) ?? null
     : null;
 
-  const handleSelect = useCallback((id: string) => setSelectedId(id), []);
+  const handleSelect = useCallback((id: string) => {
+    setSelectedId((current) => (current === id ? null : id));
+  }, []);
 
-  const emptyTitle = wallpapers.length === 0 ? 'No wallpapers loaded' : 'No wallpapers match this filter';
-  const emptyDesc =
+  const selectFilter = useCallback((nextFilter: FilterValue) => {
+    setFilter(nextFilter);
+    setViewMenuOpen(false);
+  }, []);
+
+  const emptyTitle = wallpapers.length === 0 ? 'Your library is ready for a folder' : 'No wallpapers found';
+  const emptyDescription =
     wallpapers.length === 0
-      ? 'Choose a source folder — Wallwize will scan it automatically.'
-      : 'Try adjusting your search or switching the active filter.';
+      ? 'Choose a wallpaper folder to scan it privately on this device.'
+      : 'Try another search or filter.';
 
-  const selectedSortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label ?? 'Sort';
+  const isFiltered = filter !== 'All' || deferredQuery.trim().length > 0;
+  const resultLabel = isFiltered
+    ? `${filteredWallpapers.length} of ${wallpapers.length} shown`
+    : `${wallpapers.length} ${wallpapers.length === 1 ? 'wallpaper' : 'wallpapers'}`;
+  const selectedSortLabel = SORT_OPTIONS.find((option) => option.value === sort)?.label ?? 'Highest confidence';
+  const secondaryFilter = isSecondaryFilter(filter)
+    ? SECONDARY_FILTERS.find((option) => option.value === filter)
+    : undefined;
 
   return (
-    <div className="flex min-w-0 flex-1">
-      <div className="flex min-w-0 flex-1 flex-col">
+    <main
+      className="flex min-w-0 flex-1 overflow-hidden"
+      style={{ background: 'var(--md-sys-color-surface)', color: 'var(--md-sys-color-on-surface)' }}
+    >
+      <section className="flex min-w-0 flex-1 flex-col" aria-labelledby="library-heading">
+        <header className="relative shrink-0 px-8 pb-4 pt-7" style={{ background: 'var(--md-sys-color-surface)' }}>
+          <div className="flex min-w-0 items-start justify-between gap-5">
+            <div className="min-w-0">
+              <div
+                className="mb-1.5 text-[12px] font-bold uppercase tracking-[0.14em]"
+                style={{ color: 'var(--md-sys-color-primary)' }}
+              >
+                Wallpaper library
+              </div>
+              <h1 id="library-heading" className="ww-display-hero text-[44px]">
+                Library
+              </h1>
+              <div className="ww-wavy-accent mt-2.5 w-16" />
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <PopBadge tone={hasPlan ? 'primary' : 'surface-high'} icon={hasPlan ? 'check_circle' : 'pending'}>
+                  {hasPlan ? 'Plan ready' : wallpapers.length > 0 ? 'Ready to plan' : 'No source'}
+                </PopBadge>
+                {reviewCount > 0 ? (
+                  <PopBadge tone="error" icon="rate_review">
+                    {reviewCount} to review
+                  </PopBadge>
+                ) : null}
+                <span className="text-[14px]" style={{ color: 'var(--md-sys-color-on-surface-variant)' }} aria-live="polite">
+                  {resultLabel}
+                </span>
+              </div>
+            </div>
 
-        {/* ── Toolbar ─────────────────────────────────────────── */}
-        <div style={{ background: 'var(--w-bg-raised)', borderBottom: '1px solid var(--w-border-default)' }}>
+            <div className="flex min-w-0 items-center gap-2">
+              {busyTask ? <InlineTaskLabel task={busyTask} /> : null}
+              <div ref={actionMenuRef} className="relative">
+                <MdIconButton
+                  type="button"
+                  aria-label="Library actions"
+                  aria-haspopup="menu"
+                  aria-expanded={actionMenuOpen}
+                  onClick={() => setActionMenuOpen((open) => !open)}
+                >
+                  <MaterialSymbol>more_vert</MaterialSymbol>
+                </MdIconButton>
 
-          {/* Action bar */}
-          <div
-            className="flex items-center gap-2 px-4 py-2.5"
-            style={{ borderBottom: '1px solid var(--w-border-faint)' }}
-          >
-            <button
-              type="button"
-              onClick={actions.chooseSource}
-              disabled={busy}
-              className="ww-btn-ghost flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12.5px] font-medium"
-            >
-              <FolderOpen className="size-[15px]" />
-              Choose Folder
-            </button>
-
-            <button
-              type="button"
-              onClick={actions.scan}
-              disabled={busy || !settings.sourceFolder}
-              className="ww-btn-ghost flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12.5px] font-medium"
-            >
-              <Play className="size-[15px]" />
-              Rescan
-            </button>
-
-            {/* Separator */}
-            <div className="h-5 w-px mx-0.5" style={{ background: 'var(--w-border-default)' }} />
-
-            <button
-              type="button"
-              onClick={actions.plan}
-              disabled={busy || wallpapers.length === 0}
-              className="ww-btn-primary flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[12.5px] font-semibold"
-            >
-              <Sparkles className="size-[15px]" />
-              Categorize
-            </button>
-
-            <button
-              type="button"
-              onClick={actions.apply}
-              disabled={busy || !hasPlan}
-              className="flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[12.5px] font-semibold transition-all"
-              style={{
-                background: hasPlan && !busy ? 'var(--w-emerald-tint)' : 'var(--w-bg-interactive)',
-                color: hasPlan && !busy ? 'var(--w-emerald)' : 'var(--w-text-70)',
-                border: '1px solid',
-                borderColor: hasPlan && !busy ? 'rgba(16,185,129,0.2)' : 'var(--w-border-default)',
-                opacity: busy || !hasPlan ? 0.45 : 1,
-              }}
-            >
-              <FileCheck className="size-[15px]" />
-              Organize
-            </button>
-
-            {/* Right: status / task label */}
-            <div className="ml-auto min-w-0">
-              {busyTask ? (
-                <InlineTaskLabel task={busyTask} />
-              ) : (
-                <div className="text-right">
+                {actionMenuOpen ? (
                   <div
-                    className="max-w-[420px] truncate text-[12px] font-medium"
-                    style={{ color: 'var(--w-text-70)' }}
+                    role="menu"
+                    aria-label="Library actions"
+                    className="ww-menu-pop absolute right-0 top-12 z-50 w-[250px] overflow-hidden p-2"
+                    style={{
+                      background: 'var(--md-sys-color-surface-container-high)',
+                      borderRadius: 'var(--md-sys-shape-corner-extra-large)',
+                      boxShadow: 'var(--md-sys-elevation-level4)',
+                    }}
                   >
-                    {status}
+                    <MenuAction
+                      icon="folder_open"
+                      label="Choose wallpaper folder"
+                      disabled={busy}
+                      onClick={() => {
+                        setActionMenuOpen(false);
+                        actions.chooseSource();
+                      }}
+                    />
+                    <MenuAction
+                      icon="refresh"
+                      label="Rescan folder"
+                      disabled={busy || !settings.sourceFolder}
+                      disabledReason="Choose a source folder first"
+                      onClick={() => {
+                        setActionMenuOpen(false);
+                        actions.scan();
+                      }}
+                    />
+                    <MenuAction
+                      icon="auto_awesome"
+                      label={hasPlan ? 'Refresh organization plan' : 'Create organization plan'}
+                      disabled={busy || wallpapers.length === 0}
+                      disabledReason="Scan wallpapers first"
+                      onClick={() => {
+                        setActionMenuOpen(false);
+                        actions.plan();
+                      }}
+                    />
+                    <div className="mx-3 my-1 h-px" style={{ background: 'var(--md-sys-color-outline-variant)' }} />
+                    <MenuAction
+                      icon="drive_file_move"
+                      label={`Organize plan (${settings.mode})`}
+                      disabled={busy || !hasPlan}
+                      disabledReason="Create an organization plan first"
+                      onClick={() => {
+                        setActionMenuOpen(false);
+                        actions.apply();
+                      }}
+                      emphasized
+                    />
                   </div>
-                  {settings.sourceFolder && (
-                    <div
-                      className="max-w-[420px] truncate text-[11px] font-mono"
-                      style={{ color: 'var(--w-text-40)' }}
-                    >
-                      {settings.sourceFolder}
-                    </div>
-                  )}
-                </div>
-              )}
+                ) : null}
+              </div>
             </div>
           </div>
 
-          {/* Error banner */}
-          {error && (
+          <span className="sr-only" role="status" aria-live="polite">
+            {status}
+          </span>
+
+          {error ? (
             <div
-              className="flex items-center gap-2 px-4 py-2 text-[12px]"
+              role="alert"
+              className="mt-4 flex items-start gap-3 px-4 py-3 text-[13px]"
               style={{
-                background: 'var(--w-rose-tint)',
-                borderBottom: '1px solid rgba(244,63,94,0.15)',
-                color: 'var(--w-rose)',
+                background: 'var(--md-sys-color-error-container)',
+                color: 'var(--md-sys-color-on-error-container)',
+                borderRadius: 'var(--md-sys-shape-corner-large)',
               }}
             >
-              <AlertCircle className="size-3.5 shrink-0" />
-              {error}
+              <MaterialSymbol className="mt-px shrink-0 text-[20px] leading-none">error</MaterialSymbol>
+              <span>{error}</span>
             </div>
-          )}
+          ) : null}
 
-          {/* Search + Sort */}
-          <div className="flex items-center gap-2 px-4 py-2">
-            <div
-              className="flex flex-1 items-center gap-2 rounded-lg px-3 py-[7px] ww-input"
-              style={{ background: 'var(--w-bg-base)' }}
+          <label
+            className="mt-5 flex h-16 items-center gap-3 px-5"
+            style={{
+              background: 'var(--md-sys-color-surface-container-high)',
+              color: 'var(--md-sys-color-on-surface-variant)',
+              borderRadius: 'var(--md-sys-shape-corner-extra-large)',
+            }}
+          >
+            <span className="sr-only">Search wallpapers</span>
+            <MaterialSymbol className="shrink-0 text-[24px] leading-none">search</MaterialSymbol>
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search wallpapers, categories, tags"
+              className="min-w-0 flex-1 bg-transparent text-[16px] leading-6 outline-none placeholder:text-[var(--md-sys-color-on-surface-variant)]"
+              style={{ color: 'var(--md-sys-color-on-surface)' }}
+            />
+            {query ? (
+              <MdIconButton type="button" aria-label="Clear search" onClick={() => setQuery('')}>
+                <MaterialSymbol>close</MaterialSymbol>
+              </MdIconButton>
+            ) : null}
+          </label>
+
+          <Stagger className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {FILTER_TILES.map((tile) => {
+              const selected = filter === tile.value;
+              const count = filterCounts[tile.countKey];
+              return (
+                <StaggerItem key={tile.value} className="min-w-0">
+                  <BentoCard
+                    interactive
+                    selected={selected}
+                    ariaPressed={selected}
+                    ariaLabel={`${tile.label} filter, ${count} wallpapers`}
+                    tone={selected ? (tile.tone as FilterTone) : 'surface-high'}
+                    onClick={() => selectFilter(tile.value)}
+                    className="h-full w-full p-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className="grid size-9 place-items-center rounded-full"
+                        style={{ background: 'color-mix(in srgb, currentColor 14%, transparent)' }}
+                      >
+                        <MaterialSymbol className="text-[20px] leading-none" fill={selected} opticalSize={20}>
+                          {tile.icon}
+                        </MaterialSymbol>
+                      </span>
+                      <span className="ww-display-hero text-[26px] leading-none tabular-nums">{count}</span>
+                    </div>
+                    <div className="mt-2.5 text-[13px] font-semibold">{tile.label}</div>
+                  </BentoCard>
+                </StaggerItem>
+              );
+            })}
+          </Stagger>
+
+          <div className="mt-3 flex items-center justify-end gap-2">
+            <span
+              className="mr-auto hidden text-[12px] sm:block"
+              style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
             >
-              <Search className="size-[14px] shrink-0" style={{ color: 'var(--w-text-40)' }} />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by name, category, or tag…"
-                className="flex-1 bg-transparent text-[12.5px] outline-none"
-                style={{ color: 'var(--w-text-100)' }}
-              />
-            </div>
-
-            {/* Sort dropdown */}
-            <div ref={sortMenuRef} className="relative">
-              <button
-                type="button"
-                onClick={() => setSortMenuOpen((o) => !o)}
-                className="ww-btn-ghost flex min-w-[156px] items-center justify-between gap-2 rounded-lg px-3 py-[7px] text-[12.5px] font-medium"
+              Sorted by {selectedSortLabel}
+            </span>
+            <div ref={viewMenuRef} className="relative">
+              <MorphPill
+                icon="tune"
+                selected={viewMenuOpen || Boolean(secondaryFilter)}
+                ariaLabel="Sort and additional filters"
+                onClick={() => setViewMenuOpen((open) => !open)}
               >
-                <span className="flex min-w-0 items-center gap-1.5">
-                  <SlidersHorizontal className="size-[14px] shrink-0" style={{ color: 'var(--w-text-70)' }} />
-                  <span className="truncate" style={{ color: 'var(--w-text-100)' }}>{selectedSortLabel}</span>
-                </span>
-                <ChevronDown
-                  className={`size-3 shrink-0 transition-transform ${sortMenuOpen ? 'rotate-180' : ''}`}
-                  style={{ color: 'var(--w-text-70)' }}
-                />
-              </button>
+                {secondaryFilter?.label ?? 'Sort & filter'}
+              </MorphPill>
 
-              {sortMenuOpen && (
+              {viewMenuOpen ? (
                 <div
-                  className="ww-scale-in absolute right-0 z-40 mt-1.5 w-[172px] overflow-hidden rounded-xl py-1"
+                  role="menu"
+                  aria-label="Filter and sort options"
+                  className="ww-menu-pop absolute right-0 top-12 z-50 w-[260px] overflow-hidden p-2"
                   style={{
-                    background: 'var(--w-bg-raised)',
-                    border: '1px solid var(--w-border-strong)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                    background: 'var(--md-sys-color-surface-container-high)',
+                    border: '1px solid var(--md-sys-color-outline-variant)',
+                    borderRadius: 'var(--md-sys-shape-corner-extra-large)',
+                    boxShadow: 'var(--md-sys-elevation-level3)',
                   }}
                 >
-                  {SORT_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => { setSort(opt.value); setSortMenuOpen(false); }}
-                      className="flex w-full items-center justify-between px-3.5 py-2 text-left text-[12.5px] transition-colors"
-                      style={{
-                        background: sort === opt.value ? 'var(--w-iris-tint)' : 'transparent',
-                        color: sort === opt.value ? 'var(--w-iris-bright)' : 'var(--w-text-70)',
+                  <p
+                    className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.1em]"
+                    style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
+                  >
+                    More filters
+                  </p>
+                  {SECONDARY_FILTERS.map((option) => (
+                    <MenuChoice
+                      key={option.value}
+                      label={option.label}
+                      checked={filter === option.value}
+                      onClick={() => selectFilter(option.value)}
+                    />
+                  ))}
+                  <div className="mx-3 my-1 h-px" style={{ background: 'var(--md-sys-color-outline-variant)' }} />
+                  <p
+                    className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.1em]"
+                    style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
+                  >
+                    Sort by
+                  </p>
+                  {SORT_OPTIONS.map((option) => (
+                    <MenuChoice
+                      key={option.value}
+                      label={option.label}
+                      checked={sort === option.value}
+                      onClick={() => {
+                        setSort(option.value);
+                        setViewMenuOpen(false);
                       }}
-                      onMouseEnter={(e) => {
-                        if (sort !== opt.value)
-                          (e.currentTarget as HTMLButtonElement).style.background = 'var(--w-bg-interactive)';
-                      }}
-                      onMouseLeave={(e) => {
-                        if (sort !== opt.value)
-                          (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                      }}
-                    >
-                      {opt.label}
-                      {sort === opt.value && (
-                        <CheckCircle2 className="size-3.5" style={{ color: 'var(--w-iris-bright)' }} />
-                      )}
-                    </button>
+                    />
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
+        </header>
 
-          {/* Filter chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto px-4 pb-2.5">
-            {filters.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => setFilter(name)}
-                className={`ww-chip px-3 py-1 text-[11.5px] font-medium ${filter === name ? 'ww-chip-active' : ''}`}
-              >
-                {name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Grid ─────────────────────────────────────────────── */}
-        <div className="relative min-h-0 flex-1" style={{ background: 'var(--w-bg-base)' }}>
+        <div className="relative min-h-0 flex-1">
           {filteredWallpapers.length === 0 ? (
             <EmptyLibraryState
               title={emptyTitle}
-              description={emptyDesc}
+              description={emptyDescription}
               canChooseFolder={wallpapers.length === 0}
               onChooseFolder={actions.chooseSource}
             />
@@ -332,9 +462,9 @@ export function LibraryView({
             />
           )}
         </div>
-      </div>
+      </section>
 
-      {selectedWallpaper && (
+      {selectedWallpaper ? (
         <DetailsPanel
           wallpaper={selectedWallpaper}
           busy={busy}
@@ -342,12 +472,77 @@ export function LibraryView({
           onSetDesktopWallpaper={actions.setDesktopWallpaper}
           onApproveWallpaper={actions.approveWallpaper}
         />
-      )}
-    </div>
+      ) : null}
+    </main>
   );
 }
 
-/* ── Empty state ──────────────────────────────────────────────── */
+interface MenuActionProps {
+  icon: string;
+  label: string;
+  disabled?: boolean;
+  disabledReason?: string;
+  emphasized?: boolean;
+  onClick: () => void;
+}
+
+function MenuAction({
+  icon,
+  label,
+  disabled = false,
+  disabledReason,
+  emphasized = false,
+  onClick,
+}: MenuActionProps) {
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      aria-disabled={disabled}
+      aria-label={disabled && disabledReason ? `${label}. ${disabledReason}.` : label}
+      title={disabled && disabledReason ? disabledReason : undefined}
+      onClick={() => {
+        if (!disabled) onClick();
+      }}
+      className={`flex min-h-11 w-full items-center gap-3 rounded-[16px] px-3 text-left text-[13px] font-semibold transition-colors ${
+        disabled ? 'cursor-not-allowed opacity-40' : 'hover:bg-[var(--md-sys-color-surface-container-highest)]'
+      }`}
+      style={{ color: emphasized ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface)' }}
+    >
+      <MaterialSymbol className="shrink-0 text-[20px] leading-none" fill={emphasized} opticalSize={20}>
+        {icon}
+      </MaterialSymbol>
+      <span>{label}</span>
+    </button>
+  );
+}
+
+interface MenuChoiceProps {
+  label: string;
+  checked: boolean;
+  onClick: () => void;
+}
+
+function MenuChoice({ label, checked, onClick }: MenuChoiceProps) {
+  return (
+    <button
+      type="button"
+      role="menuitemradio"
+      aria-checked={checked}
+      onClick={onClick}
+      className="flex min-h-10 w-full items-center justify-between gap-3 rounded-[16px] px-3 text-left text-[13px] font-medium transition-colors hover:bg-[var(--md-sys-color-surface-container-highest)]"
+      style={{ color: checked ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface)' }}
+    >
+      <span>{label}</span>
+      {checked ? (
+        <MaterialSymbol className="shrink-0 text-[19px] leading-none" fill opticalSize={20}>
+          check
+        </MaterialSymbol>
+      ) : null}
+    </button>
+  );
+}
+
 interface EmptyLibraryStateProps {
   title: string;
   description: string;
@@ -357,36 +552,38 @@ interface EmptyLibraryStateProps {
 
 function EmptyLibraryState({ title, description, canChooseFolder, onChooseFolder }: EmptyLibraryStateProps) {
   return (
-    <div className="flex h-full items-center justify-center">
-      <div className="ww-fade-in-up max-w-sm text-center">
+    <div className="flex h-full items-center justify-center px-8 pb-16">
+      <div className="ww-reveal max-w-sm text-center">
         <div
-          className="mx-auto mb-4 grid size-12 place-items-center rounded-2xl"
-          style={{ background: 'var(--w-bg-raised)', border: '1px solid var(--w-border-default)' }}
+          className="mx-auto mb-5 grid size-24 place-items-center"
+          style={{
+            background: 'var(--md-sys-color-secondary-container)',
+            color: 'var(--md-sys-color-on-secondary-container)',
+            borderRadius: 'var(--md-sys-shape-corner-extra-large-increased)',
+          }}
         >
-          <FolderOpen className="size-5" style={{ color: 'var(--w-text-40)' }} />
+          <MaterialSymbol className="text-[44px] leading-none" fill opticalSize={40}>
+            photo_library
+          </MaterialSymbol>
         </div>
-        <div className="mb-2 text-[14px] font-semibold" style={{ color: 'var(--w-text-100)' }}>
-          {title}
-        </div>
-        <div className="mb-5 text-[12.5px]" style={{ color: 'var(--w-text-70)' }}>
+        <h2 className="ww-type-headline-emphasized text-[24px]">{title}</h2>
+        <p
+          className="mx-auto mt-2 max-w-xs text-[14px] leading-5"
+          style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
+        >
           {description}
-        </div>
-        {canChooseFolder && (
-          <button
-            type="button"
-            onClick={onChooseFolder}
-            className="ww-btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-[13px] font-semibold"
-          >
-            <FolderOpen className="size-4" />
-            Choose Wallpapers
-          </button>
-        )}
+        </p>
+        {canChooseFolder ? (
+          <MdFilledButton className="mt-6" type="button" onClick={onChooseFolder} hasIcon>
+            <MaterialSymbol slot="icon">folder_open</MaterialSymbol>
+            Choose folder
+          </MdFilledButton>
+        ) : null}
       </div>
     </div>
   );
 }
 
-/* ── Virtual grid ─────────────────────────────────────────────── */
 interface VirtualWallpaperGridProps {
   wallpapers: WallpaperItem[];
   selectedId: string | null;
@@ -403,13 +600,17 @@ function VirtualWallpaperGrid({ wallpapers, selectedId, onSelect }: VirtualWallp
   const [viewport, setViewport] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    const el = viewportRef.current;
-    if (!el) return;
-    const update = () => setViewport({ width: el.clientWidth, height: el.clientHeight });
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
+    const viewportElement = viewportRef.current;
+    if (!viewportElement) return;
+
+    const updateViewport = () => {
+      setViewport({ width: viewportElement.clientWidth, height: viewportElement.clientHeight });
+    };
+
+    updateViewport();
+    const resizeObserver = new ResizeObserver(updateViewport);
+    resizeObserver.observe(viewportElement);
+    return () => resizeObserver.disconnect();
   }, []);
 
   useEffect(() => {
@@ -420,52 +621,60 @@ function VirtualWallpaperGrid({ wallpapers, selectedId, onSelect }: VirtualWallp
   }, []);
 
   const handleScroll = useCallback(() => {
-    const el = viewportRef.current;
-    if (!el) return;
-    pendingScrollTopRef.current = el.scrollTop;
+    const viewportElement = viewportRef.current;
+    if (!viewportElement) return;
+
+    pendingScrollTopRef.current = viewportElement.scrollTop;
     setIsScrolling(true);
     if (scrollEndTimerRef.current !== null) window.clearTimeout(scrollEndTimerRef.current);
     scrollEndTimerRef.current = window.setTimeout(() => setIsScrolling(false), 120);
     if (frameRef.current !== null) return;
+
     frameRef.current = window.requestAnimationFrame(() => {
       setScrollTop(pendingScrollTopRef.current);
       frameRef.current = null;
     });
   }, []);
 
-  const availableWidth = Math.max(viewport.width - GRID_PADDING * 2, GRID_MIN_CARD_WIDTH);
-  const columns      = Math.max(1, Math.floor((availableWidth + GRID_GAP) / (GRID_MIN_CARD_WIDTH + GRID_GAP)));
-  const cardWidth    = Math.floor((availableWidth - (columns - 1) * GRID_GAP) / columns);
-  const cardHeight   = Math.max(108, Math.round(cardWidth * 9 / 16));
-  const rowStride    = cardHeight + GRID_GAP;
-  const rowCount     = Math.ceil(wallpapers.length / columns);
-  const startRow     = Math.max(0, Math.floor(Math.max(scrollTop - GRID_PADDING, 0) / rowStride) - GRID_OVERSCAN_ROWS);
-  const endRow       = Math.min(rowCount, Math.ceil((scrollTop + viewport.height + GRID_PADDING) / rowStride) + GRID_OVERSCAN_ROWS);
-  const startIndex   = startRow * columns;
-  const endIndex     = Math.min(wallpapers.length, endRow * columns);
-  const visible      = wallpapers.slice(startIndex, endIndex);
-  const totalHeight  = GRID_PADDING * 2 + Math.max(rowCount * rowStride - GRID_GAP, 0);
+  const availableWidth = Math.max(viewport.width - GRID_HORIZONTAL_PADDING * 2, GRID_MIN_CARD_WIDTH);
+  const columns = Math.max(1, Math.floor((availableWidth + GRID_GAP) / (GRID_MIN_CARD_WIDTH + GRID_GAP)));
+  const cardWidth = Math.floor((availableWidth - (columns - 1) * GRID_GAP) / columns);
+  const cardHeight = Math.max(140, Math.round((cardWidth * 9) / 16));
+  const rowStride = cardHeight + GRID_GAP;
+  const rowCount = Math.ceil(wallpapers.length / columns);
+  const startRow = Math.max(
+    0,
+    Math.floor(Math.max(scrollTop - GRID_TOP_PADDING, 0) / rowStride) - GRID_OVERSCAN_ROWS,
+  );
+  const endRow = Math.min(
+    rowCount,
+    Math.ceil((scrollTop + viewport.height + GRID_BOTTOM_PADDING) / rowStride) + GRID_OVERSCAN_ROWS,
+  );
+  const startIndex = startRow * columns;
+  const endIndex = Math.min(wallpapers.length, endRow * columns);
+  const visibleWallpapers = wallpapers.slice(startIndex, endIndex);
+  const totalHeight = GRID_TOP_PADDING + GRID_BOTTOM_PADDING + Math.max(rowCount * rowStride - GRID_GAP, 0);
 
   return (
     <div
       ref={viewportRef}
       onScroll={handleScroll}
       className="wallwize-library-scroll h-full overflow-auto"
-      style={{ background: 'var(--w-bg-base)' }}
+      style={{ background: 'var(--md-sys-color-surface)' }}
     >
       <div className="relative" style={{ height: totalHeight }}>
-        {visible.map((wallpaper, offset) => {
-          const index  = startIndex + offset;
-          const row    = Math.floor(index / columns);
+        {visibleWallpapers.map((wallpaper, offset) => {
+          const index = startIndex + offset;
+          const row = Math.floor(index / columns);
           const column = index % columns;
-          const left   = GRID_PADDING + column * (cardWidth + GRID_GAP);
-          const top    = GRID_PADDING + row * rowStride;
+          const left = GRID_HORIZONTAL_PADDING + column * (cardWidth + GRID_GAP);
+          const top = GRID_TOP_PADDING + row * rowStride;
 
           return (
             <div
               key={wallpaper.id}
               className="absolute"
-              style={{ width: cardWidth, height: cardHeight, transform: `translate3d(${left}px,${top}px,0)` }}
+              style={{ width: cardWidth, height: cardHeight, transform: `translate3d(${left}px, ${top}px, 0)` }}
             >
               <WallpaperCard
                 wallpaper={wallpaper}
@@ -481,7 +690,6 @@ function VirtualWallpaperGrid({ wallpapers, selectedId, onSelect }: VirtualWallp
   );
 }
 
-/* ── Wallpaper card ─────────────────────────────────────────────── */
 interface WallpaperCardProps {
   wallpaper: WallpaperItem;
   selected: boolean;
@@ -489,118 +697,72 @@ interface WallpaperCardProps {
   onSelect: (id: string) => void;
 }
 
-const WallpaperCard = memo(function WallpaperCard({ wallpaper, selected, deferImage, onSelect }: WallpaperCardProps) {
-  const conf = wallpaper.confidence;
-  const confColor = conf >= 80 ? 'var(--w-emerald)' : conf >= 60 ? 'var(--w-amber)' : 'var(--w-rose)';
+const WallpaperCard = memo(function WallpaperCard({
+  wallpaper,
+  selected,
+  deferImage,
+  onSelect,
+}: WallpaperCardProps) {
+  const needsReview = wallpaper.category === 'Needs Review' || wallpaper.confidence < 70;
 
   return (
     <button
       type="button"
+      aria-pressed={selected}
+      aria-label={`${wallpaper.filename}, ${wallpaper.category}, ${wallpaper.confidence}% confidence`}
       onClick={() => onSelect(wallpaper.id)}
-      title={wallpaper.filename}
-      className="wallwize-wallpaper-card group relative h-full w-full text-left"
+      className="wallwize-wallpaper-card group relative h-full w-full overflow-hidden text-left outline-none focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[var(--md-sys-color-primary)]"
       style={{
-        background: 'var(--w-bg-surface)',
+        background: 'var(--md-sys-color-surface-container-high)',
         boxShadow: selected
-          ? `0 0 0 2px var(--w-iris), 0 0 0 4px var(--w-iris-tint)`
-          : `0 1px 3px rgba(0,0,0,0.3), 0 0 0 1px var(--w-border-faint)`,
+          ? '0 0 0 3px var(--md-sys-color-primary), var(--md-sys-elevation-level3)'
+          : 'none',
       }}
     >
-      {/* Thumbnail */}
       <WallpaperThumbnail
         wallpaper={wallpaper}
         defer={deferImage}
-        className="h-full w-full object-cover"
+        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
       />
 
-      {/* Hover overlay */}
       <div
-        className="absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100"
-        style={{ background: 'linear-gradient(to top, rgba(6,8,14,0.85) 0%, rgba(6,8,14,0.15) 55%, transparent 100%)' }}
-      />
-
-      {/* Always-visible bottom gradient */}
-      <div
-        className="absolute inset-x-0 bottom-0"
-        style={{ background: 'linear-gradient(to top, rgba(6,8,14,0.90) 0%, rgba(6,8,14,0.4) 50%, transparent 100%)', padding: '8px 8px 6px' }}
+        className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 px-3.5 pb-3 pt-10 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+        style={{ background: 'linear-gradient(to top, rgba(12, 10, 20, 0.86), transparent)', color: '#fff' }}
       >
-        {/* Category + confidence */}
-        <div className="mb-1 flex items-center justify-between gap-2">
-          <span
-            className="truncate text-[11.5px] font-medium text-white"
-            style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
-          >
-            {wallpaper.category}
-          </span>
-          <span
-            className="shrink-0 rounded-full px-1.5 py-px text-[10.5px] font-semibold tabular-nums"
-            style={{
-              background: `${confColor}22`,
-              color: confColor,
-              border: `1px solid ${confColor}44`,
-            }}
-          >
-            {conf}%
-          </span>
-        </div>
-
-        {/* Confidence bar */}
-        <div
-          className="mb-1.5 h-[2px] w-full overflow-hidden rounded-full"
-          style={{ background: 'rgba(255,255,255,0.08)' }}
-        >
-          <div
-            className="h-full rounded-full transition-all"
-            style={{ width: `${conf}%`, background: confColor }}
-          />
-        </div>
-
-        {/* Source badges */}
-        <div className="flex items-center gap-1">
-          {wallpaper.source === 'AI Vision'     && <SourceBadge icon="ai"        label="AI" />}
-          {wallpaper.source === 'AI Suggestion' && <SourceBadge icon="review"    label="Review" />}
-          {wallpaper.source === 'Filename'      && <SourceBadge icon="file"      label="File" />}
-          {wallpaper.source === 'Discovery'     && <SourceBadge icon="discovery" label="Disc" />}
-          {wallpaper.source === 'OLED Rule'     && <SourceBadge icon="file"      label="Rule" />}
-          {conf < 70 && (
-            <div
-              className="flex items-center rounded-full px-1.5 py-px"
-              style={{ background: 'var(--w-amber-tint)', border: '1px solid rgba(245,158,11,0.2)' }}
-            >
-              <AlertCircle className="size-2.5" style={{ color: 'var(--w-amber)' }} />
-            </div>
-          )}
-        </div>
+        <span className="truncate text-[13px] font-semibold">{wallpaper.category}</span>
+        <span className="shrink-0 text-[12px] font-semibold tabular-nums">{wallpaper.confidence}%</span>
       </div>
 
-      {/* Selection ring glow */}
-      {selected && (
-        <div
-          className="pointer-events-none absolute inset-0 rounded-xl"
-          style={{ boxShadow: '0 0 0 2px var(--w-iris) inset' }}
-        />
-      )}
+      {needsReview ? (
+        <span
+          className="pointer-events-none absolute bottom-3 left-3 inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-[11px] font-semibold"
+          style={{
+            background: 'var(--md-sys-color-error-container)',
+            color: 'var(--md-sys-color-on-error-container)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.22)',
+          }}
+        >
+          <MaterialSymbol className="text-[16px] leading-none" opticalSize={20}>
+            rate_review
+          </MaterialSymbol>
+          Review
+        </span>
+      ) : null}
+
+      {selected ? (
+        <span
+          className="ww-pop pointer-events-none absolute right-3 top-3 grid size-9 place-items-center rounded-full"
+          style={{
+            background: 'var(--md-sys-color-primary)',
+            color: 'var(--md-sys-color-on-primary)',
+            boxShadow: '0 3px 12px rgba(0, 0, 0, 0.24)',
+          }}
+        >
+          <MaterialSymbol className="text-[22px] leading-none" fill>
+            check
+          </MaterialSymbol>
+        </span>
+      ) : null}
     </button>
   );
 });
-
-function SourceBadge({ icon, label }: { icon: 'ai' | 'file' | 'discovery' | 'review'; label: string }) {
-  const styles: Record<string, { bg: string; color: string; border: string }> = {
-    ai:        { bg: 'var(--w-iris-tint)',    color: 'var(--w-iris-bright)', border: 'rgba(99,102,241,0.2)' },
-    file:      { bg: 'rgba(56,189,248,0.12)', color: '#38BDF8',              border: 'rgba(56,189,248,0.2)' },
-    discovery: { bg: 'var(--w-amber-tint)',   color: 'var(--w-amber)',        border: 'rgba(245,158,11,0.2)' },
-    review:    { bg: 'var(--w-rose-tint)',    color: 'var(--w-rose)',         border: 'rgba(244,63,94,0.2)' },
-  };
-  const s = styles[icon];
-  const Icon = icon === 'ai' ? Sparkles : icon === 'file' ? FileText : icon === 'review' ? AlertCircle : CheckCircle2;
-
-  return (
-    <div
-      className="flex items-center gap-1 rounded-full px-1.5 py-px"
-      style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}
-    >
-      <Icon className="size-2.5" />
-      <span className="text-[10px] font-medium">{label}</span>
-    </div>
-  );
-}
