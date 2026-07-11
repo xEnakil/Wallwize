@@ -1,81 +1,479 @@
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
-  --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+/*
+ * Wallwize Material 3 Expressive theme
+ *
+ * Color roles follow the official --md-sys-color-* contract. Shape and motion
+ * values are synchronized with the supplied Material Web main branch
+ * (Material 3 token version 34.0.21). The iris palette is intentionally calm:
+ * wallpaper artwork supplies the visual intensity while UI color communicates
+ * hierarchy and state.
+ */
+
+:root,
+.ww-light {
+  color-scheme: light;
+
+  --md-sys-color-primary: #5147c8;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #e4dfff;
+  --md-sys-color-on-primary-container: #17105f;
+  --md-sys-color-inverse-primary: #c5c0ff;
+  --md-sys-color-primary-fixed: #e4dfff;
+  --md-sys-color-primary-fixed-dim: #c5c0ff;
+  --md-sys-color-on-primary-fixed: #130065;
+  --md-sys-color-on-primary-fixed-variant: #3830a9;
+
+  --md-sys-color-secondary: #5e5c71;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #e3e0f9;
+  --md-sys-color-on-secondary-container: #1b1a2c;
+  --md-sys-color-secondary-fixed: #e3e0f9;
+  --md-sys-color-secondary-fixed-dim: #c7c3dc;
+  --md-sys-color-on-secondary-fixed: #1b1a2c;
+  --md-sys-color-on-secondary-fixed-variant: #474558;
+
+  --md-sys-color-tertiary: #795267;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #ffd8e8;
+  --md-sys-color-on-tertiary-container: #301122;
+  --md-sys-color-tertiary-fixed: #ffd8e8;
+  --md-sys-color-tertiary-fixed-dim: #e9b8ce;
+  --md-sys-color-on-tertiary-fixed: #301122;
+  --md-sys-color-on-tertiary-fixed-variant: #603b4f;
+
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+
+  --md-sys-color-background: #fcf8ff;
+  --md-sys-color-on-background: #1c1b20;
+  --md-sys-color-surface: #fcf8ff;
+  --md-sys-color-on-surface: #1c1b20;
+  --md-sys-color-surface-variant: #e6e0ec;
+  --md-sys-color-on-surface-variant: #48464f;
+  --md-sys-color-surface-dim: #dcd8e0;
+  --md-sys-color-surface-bright: #fcf8ff;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f6f2fa;
+  --md-sys-color-surface-container: #f0ecf4;
+  --md-sys-color-surface-container-high: #ebe6ee;
+  --md-sys-color-surface-container-highest: #e5e1e9;
+  --md-sys-color-outline: #797680;
+  --md-sys-color-outline-variant: #cac5d0;
+  --md-sys-color-inverse-surface: #313035;
+  --md-sys-color-inverse-on-surface: #f4eff7;
+  --md-sys-color-surface-tint: var(--md-sys-color-primary);
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-shadow: #000000;
+
+  --ww-color-success: #146c2e;
+  --ww-color-on-success: #ffffff;
+  --ww-color-success-container: #a9f5c4;
+  --ww-color-on-success-container: #002109;
+  --ww-color-warning: #795900;
+  --ww-color-on-warning: #ffffff;
+  --ww-color-warning-container: #ffdea5;
+  --ww-color-on-warning-container: #261900;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  color-scheme: dark;
+
+  --md-sys-color-primary: #c5c0ff;
+  --md-sys-color-on-primary: #292184;
+  --md-sys-color-primary-container: #3f378f;
+  --md-sys-color-on-primary-container: #e4dfff;
+  --md-sys-color-inverse-primary: #5147c8;
+  --md-sys-color-primary-fixed: #e4dfff;
+  --md-sys-color-primary-fixed-dim: #c5c0ff;
+  --md-sys-color-on-primary-fixed: #130065;
+  --md-sys-color-on-primary-fixed-variant: #3830a9;
+
+  --md-sys-color-secondary: #c7c3dc;
+  --md-sys-color-on-secondary: #302e42;
+  --md-sys-color-secondary-container: #474559;
+  --md-sys-color-on-secondary-container: #e3e0f9;
+  --md-sys-color-secondary-fixed: #e3e0f9;
+  --md-sys-color-secondary-fixed-dim: #c7c3dc;
+  --md-sys-color-on-secondary-fixed: #1b1a2c;
+  --md-sys-color-on-secondary-fixed-variant: #474558;
+
+  --md-sys-color-tertiary: #e9b8ce;
+  --md-sys-color-on-tertiary: #472537;
+  --md-sys-color-tertiary-container: #603b4f;
+  --md-sys-color-on-tertiary-container: #ffd8e8;
+  --md-sys-color-tertiary-fixed: #ffd8e8;
+  --md-sys-color-tertiary-fixed-dim: #e9b8ce;
+  --md-sys-color-on-tertiary-fixed: #301122;
+  --md-sys-color-on-tertiary-fixed-variant: #603b4f;
+
+  --md-sys-color-error: #ffb4ab;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000a;
+  --md-sys-color-on-error-container: #ffdad6;
+
+  --md-sys-color-background: #131318;
+  --md-sys-color-on-background: #e5e1e9;
+  --md-sys-color-surface: #131318;
+  --md-sys-color-on-surface: #e5e1e9;
+  --md-sys-color-surface-variant: #47464f;
+  --md-sys-color-on-surface-variant: #c9c5d0;
+  --md-sys-color-surface-dim: #131318;
+  --md-sys-color-surface-bright: #39383e;
+  --md-sys-color-surface-container-lowest: #0e0e13;
+  --md-sys-color-surface-container-low: #1b1b21;
+  --md-sys-color-surface-container: #1f1f26;
+  --md-sys-color-surface-container-high: #2a292f;
+  --md-sys-color-surface-container-highest: #35343a;
+  --md-sys-color-outline: #928f99;
+  --md-sys-color-outline-variant: #47464f;
+  --md-sys-color-inverse-surface: #e5e1e9;
+  --md-sys-color-inverse-on-surface: #313035;
+  --md-sys-color-surface-tint: var(--md-sys-color-primary);
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-shadow: #000000;
+
+  --ww-color-success: #8eda9f;
+  --ww-color-on-success: #003914;
+  --ww-color-success-container: #0b5226;
+  --ww-color-on-success-container: #a9f5c4;
+  --ww-color-warning: #f5be48;
+  --ww-color-on-warning: #402d00;
+  --ww-color-warning-container: #5b4300;
+  --ww-color-on-warning-container: #ffdea5;
+}
+
+/* App light mode is represented by `.dark.ww-light` during the transition. */
+.dark.ww-light {
+  color-scheme: light;
+
+  --md-sys-color-primary: #5147c8;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #e4dfff;
+  --md-sys-color-on-primary-container: #17105f;
+  --md-sys-color-inverse-primary: #c5c0ff;
+  --md-sys-color-secondary: #5e5c71;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #e3e0f9;
+  --md-sys-color-on-secondary-container: #1b1a2c;
+  --md-sys-color-tertiary: #795267;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #ffd8e8;
+  --md-sys-color-on-tertiary-container: #301122;
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+  --md-sys-color-background: #fcf8ff;
+  --md-sys-color-on-background: #1c1b20;
+  --md-sys-color-surface: #fcf8ff;
+  --md-sys-color-on-surface: #1c1b20;
+  --md-sys-color-surface-variant: #e6e0ec;
+  --md-sys-color-on-surface-variant: #48464f;
+  --md-sys-color-surface-dim: #dcd8e0;
+  --md-sys-color-surface-bright: #fcf8ff;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f6f2fa;
+  --md-sys-color-surface-container: #f0ecf4;
+  --md-sys-color-surface-container-high: #ebe6ee;
+  --md-sys-color-surface-container-highest: #e5e1e9;
+  --md-sys-color-outline: #797680;
+  --md-sys-color-outline-variant: #cac5d0;
+  --md-sys-color-inverse-surface: #313035;
+  --md-sys-color-inverse-on-surface: #f4eff7;
+  --ww-color-success: #146c2e;
+  --ww-color-on-success: #ffffff;
+  --ww-color-success-container: #a9f5c4;
+  --ww-color-on-success-container: #002109;
+  --ww-color-warning: #795900;
+  --ww-color-on-warning: #ffffff;
+  --ww-color-warning-container: #ffdea5;
+  --ww-color-on-warning-container: #261900;
+}
+
+:root {
+  /* Material 3 Expressive shape scale from the supplied Material Web source. */
+  --md-sys-shape-corner-none: 0px;
+  --md-sys-shape-corner-extra-small: 4px;
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-large-increased: 20px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-extra-large-increased: 32px;
+  --md-sys-shape-corner-extra-extra-large: 48px;
+  --md-sys-shape-corner-full: 9999px;
+  --md-sys-shape-corner-xs: var(--md-sys-shape-corner-extra-small);
+  --md-sys-shape-corner-sm: var(--md-sys-shape-corner-small);
+  --md-sys-shape-corner-md: var(--md-sys-shape-corner-medium);
+  --md-sys-shape-corner-lg: var(--md-sys-shape-corner-large);
+  --md-sys-shape-corner-lg-increased: var(--md-sys-shape-corner-large-increased);
+  --md-sys-shape-corner-xl: var(--md-sys-shape-corner-extra-large);
+  --md-sys-shape-corner-xl-increased: var(--md-sys-shape-corner-extra-large-increased);
+  --md-sys-shape-corner-xxl: var(--md-sys-shape-corner-extra-extra-large);
+
+  /* Material 3 motion scale from the supplied Material Web source. */
+  --md-sys-motion-duration-short1: 50ms;
+  --md-sys-motion-duration-short2: 100ms;
+  --md-sys-motion-duration-short3: 150ms;
+  --md-sys-motion-duration-short4: 200ms;
+  --md-sys-motion-duration-medium1: 250ms;
+  --md-sys-motion-duration-medium2: 300ms;
+  --md-sys-motion-duration-medium3: 350ms;
+  --md-sys-motion-duration-medium4: 400ms;
+  --md-sys-motion-duration-long1: 450ms;
+  --md-sys-motion-duration-long2: 500ms;
+  --md-sys-motion-duration-long3: 550ms;
+  --md-sys-motion-duration-long4: 600ms;
+  --md-sys-motion-duration-extra-long1: 700ms;
+  --md-sys-motion-duration-extra-long2: 800ms;
+  --md-sys-motion-duration-extra-long3: 900ms;
+  --md-sys-motion-duration-extra-long4: 1000ms;
+  --md-sys-motion-easing-linear: cubic-bezier(0, 0, 1, 1);
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --md-sys-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+
+  /*
+   * Material 3 Expressive spring motion (Material Design token v34.0.21).
+   *
+   * These CSS linear() curves are physically generated from the official
+   * spring stiffness/damping-ratio pairs (mass = 1) so CSS transitions match
+   * the spec's spatial and effects springs. `spatial` springs (damping 0.9)
+   * carry a whisper of overshoot; `effects` springs (damping 1.0) are smooth.
+   * `bouncy*` are Wallwize additions with visible overshoot for hero moments.
+   * Pair each easing with its *-duration companion. See app/material/motion.ts
+   * for the matching Framer Motion configs used in JS-driven animation.
+   */
+  --md-sys-motion-spring-spatial-fast: linear(0, 0.0152, 0.0543, 0.1096, 0.1749, 0.2455, 0.3179, 0.3895, 0.4584, 0.5234, 0.5839, 0.6392, 0.6893, 0.7342, 0.7741, 0.8092, 0.8399, 0.8666, 0.8895, 0.9092, 0.9259, 0.9401, 0.952, 0.9619, 0.9701, 0.9768, 0.9824, 0.9868, 0.9904, 0.9933, 0.9955, 0.9972, 0.9986, 0.9996, 1.0003, 1.0008, 1.0012, 1.0014, 1.0015, 1.0015, 1.0015, 1.0015, 1.0014, 1.0013, 1.0012, 1.0011, 1.0009, 1.0008, 1);
+  --md-sys-motion-spring-spatial-fast-duration: 236ms;
+  --md-sys-motion-spring-spatial-default: linear(0, 0.0094, 0.0344, 0.071, 0.1161, 0.1667, 0.2209, 0.2767, 0.3329, 0.3883, 0.4422, 0.4938, 0.5428, 0.5889, 0.632, 0.6719, 0.7086, 0.7423, 0.7729, 0.8007, 0.8257, 0.8482, 0.8684, 0.8863, 0.9022, 0.9163, 0.9286, 0.9395, 0.949, 0.9572, 0.9643, 0.9705, 0.9758, 0.9803, 0.9842, 0.9875, 0.9902, 0.9925, 0.9944, 0.996, 0.9973, 0.9984, 0.9992, 0.9999, 1.0004, 1.0008, 1.0011, 1.0013, 1);
+  --md-sys-motion-spring-spatial-default-duration: 259ms;
+  --md-sys-motion-spring-spatial-slow: linear(0, 0.009, 0.0332, 0.0687, 0.1124, 0.1617, 0.2145, 0.2692, 0.3243, 0.3788, 0.4319, 0.4831, 0.5317, 0.5777, 0.6207, 0.6607, 0.6976, 0.7316, 0.7626, 0.7908, 0.8164, 0.8394, 0.8601, 0.8786, 0.8951, 0.9097, 0.9226, 0.934, 0.944, 0.9527, 0.9603, 0.9669, 0.9726, 0.9775, 0.9817, 0.9853, 0.9884, 0.9909, 0.9931, 0.9949, 0.9963, 0.9975, 0.9985, 0.9993, 1, 1.0004, 1.0008, 1.0011, 1);
+  --md-sys-motion-spring-spatial-slow-duration: 388ms;
+  --md-sys-motion-spring-effects-fast: linear(0, 0.0204, 0.0709, 0.139, 0.2159, 0.2955, 0.374, 0.4486, 0.5179, 0.5812, 0.6382, 0.6888, 0.7335, 0.7726, 0.8065, 0.8359, 0.8612, 0.8828, 0.9013, 0.9171, 0.9304, 0.9417, 0.9513, 0.9593, 0.9661, 0.9717, 0.9765, 0.9804, 0.9838, 0.9865, 0.9888, 0.9908, 0.9923, 0.9937, 0.9948, 0.9957, 0.9964, 0.9971, 0.9976, 0.998, 0.9984, 0.9986, 0.9989, 0.9991, 0.9992, 0.9994, 0.9995, 0.9996, 1);
+  --md-sys-motion-spring-effects-fast-duration: 169ms;
+  --md-sys-motion-spring-effects-default: linear(0, 0.0186, 0.0652, 0.1285, 0.2008, 0.2765, 0.3518, 0.4242, 0.4921, 0.5548, 0.6117, 0.663, 0.7086, 0.7489, 0.7843, 0.8153, 0.8422, 0.8655, 0.8856, 0.9029, 0.9177, 0.9304, 0.9412, 0.9504, 0.9582, 0.9648, 0.9704, 0.9752, 0.9792, 0.9825, 0.9854, 0.9878, 0.9898, 0.9915, 0.9929, 0.9941, 0.995, 0.9959, 0.9966, 0.9971, 0.9976, 0.998, 0.9984, 0.9986, 0.9989, 0.9991, 0.9992, 0.9994, 1);
+  --md-sys-motion-spring-effects-default-duration: 248ms;
+  --md-sys-motion-spring-effects-slow: linear(0, 0.0173, 0.0608, 0.1205, 0.1892, 0.2616, 0.3343, 0.4047, 0.4714, 0.5333, 0.5901, 0.6416, 0.6878, 0.729, 0.7655, 0.7976, 0.8258, 0.8504, 0.8718, 0.8903, 0.9063, 0.9201, 0.932, 0.9422, 0.9509, 0.9584, 0.9647, 0.9701, 0.9748, 0.9787, 0.982, 0.9848, 0.9872, 0.9892, 0.9909, 0.9924, 0.9936, 0.9946, 0.9955, 0.9962, 0.9968, 0.9973, 0.9978, 0.9981, 0.9984, 0.9987, 0.9989, 0.9991, 1);
+  --md-sys-motion-spring-effects-slow-duration: 337ms;
+  --md-sys-motion-spring-bouncy: linear(0, 0.0241, 0.0877, 0.1785, 0.2861, 0.4014, 0.5174, 0.6285, 0.7308, 0.8216, 0.8993, 0.9635, 1.0144, 1.0527, 1.0796, 1.0965, 1.105, 1.1067, 1.103, 1.0954, 1.0852, 1.0735, 1.0611, 1.0488, 1.0371, 1.0264, 1.017, 1.0091, 1.0025, 0.9974, 0.9936, 0.991, 0.9894, 0.9887, 0.9887, 0.9892, 0.99, 0.9912, 0.9925, 0.9938, 0.9951, 0.9963, 0.9974, 0.9984, 0.9992, 0.9999, 1.0004, 1.0008, 1);
+  --md-sys-motion-spring-bouncy-duration: 484ms;
+  --md-sys-motion-spring-bouncy-soft: linear(0, 0.0228, 0.0822, 0.1662, 0.2649, 0.3703, 0.4759, 0.5773, 0.671, 0.7549, 0.828, 0.8898, 0.9406, 0.9809, 1.0117, 1.0341, 1.0492, 1.0584, 1.0626, 1.0631, 1.0607, 1.0562, 1.0505, 1.0441, 1.0373, 1.0307, 1.0245, 1.0188, 1.0137, 1.0093, 1.0057, 1.0027, 1.0004, 0.9987, 0.9974, 0.9966, 0.9962, 0.996, 0.996, 0.9963, 0.9966, 0.997, 0.9974, 0.9978, 0.9982, 0.9986, 0.9989, 0.9992, 1);
+  --md-sys-motion-spring-bouncy-soft-duration: 568ms;
+
+  /* Expressive typescale weights (Material Design v34.0.21 "emphasized"). */
+  --md-sys-typescale-emphasized-display-weight: 500;
+  --md-sys-typescale-emphasized-headline-weight: 600;
+  --md-sys-typescale-emphasized-title-weight: 600;
+  --md-sys-typescale-emphasized-body-weight: 500;
+  --md-sys-typescale-emphasized-label-weight: 700;
+
+  /* Expressive shape morph: resting vs. pressed/active corner radii. */
+  --ww-shape-morph-card: var(--md-sys-shape-corner-extra-large);
+  --ww-shape-morph-card-pressed: var(--md-sys-shape-corner-large);
+  --ww-shape-morph-button: var(--md-sys-shape-corner-full);
+  --ww-shape-morph-button-pressed: var(--md-sys-shape-corner-large);
+
+  --md-sys-state-hover-state-layer-opacity: 0.08;
+  --md-sys-state-focus-state-layer-opacity: 0.1;
+  --md-sys-state-pressed-state-layer-opacity: 0.1;
+  --md-sys-state-dragged-state-layer-opacity: 0.16;
+  --md-sys-state-disabled-container-opacity: 0.12;
+  --md-sys-state-disabled-content-opacity: 0.38;
+
+  --md-sys-elevation-level0: none;
+  --md-sys-elevation-level1: 0 1px 2px rgb(0 0 0 / 0.2), 0 1px 3px 1px rgb(0 0 0 / 0.1);
+  --md-sys-elevation-level2: 0 1px 2px rgb(0 0 0 / 0.2), 0 2px 6px 2px rgb(0 0 0 / 0.1);
+  --md-sys-elevation-level3: 0 4px 8px 3px rgb(0 0 0 / 0.12), 0 1px 3px rgb(0 0 0 / 0.2);
+  --md-sys-elevation-level4: 0 6px 10px 4px rgb(0 0 0 / 0.12), 0 2px 3px rgb(0 0 0 / 0.2);
+  --md-sys-elevation-level5: 0 8px 12px 6px rgb(0 0 0 / 0.12), 0 4px 4px rgb(0 0 0 / 0.2);
+
+  --md-ref-typeface-brand: 'Roboto Flex Variable', 'Roboto Flex', system-ui, sans-serif;
+  --md-ref-typeface-plain: 'Roboto Flex Variable', 'Roboto Flex', system-ui, sans-serif;
+  --md-ref-typeface-weight-regular: 400;
+  --md-ref-typeface-weight-medium: 500;
+  --md-ref-typeface-weight-bold: 700;
+
+  --md-sys-typescale-display-large-font: var(--md-ref-typeface-brand);
+  --md-sys-typescale-display-large-size: 57px;
+  --md-sys-typescale-display-large-line-height: 64px;
+  --md-sys-typescale-display-large-weight: 400;
+  --md-sys-typescale-display-medium-font: var(--md-ref-typeface-brand);
+  --md-sys-typescale-display-medium-size: 45px;
+  --md-sys-typescale-display-medium-line-height: 52px;
+  --md-sys-typescale-display-medium-weight: 400;
+  --md-sys-typescale-display-small-font: var(--md-ref-typeface-brand);
+  --md-sys-typescale-display-small-size: 36px;
+  --md-sys-typescale-display-small-line-height: 44px;
+  --md-sys-typescale-display-small-weight: 400;
+  --md-sys-typescale-headline-large-font: var(--md-ref-typeface-brand);
+  --md-sys-typescale-headline-large-size: 32px;
+  --md-sys-typescale-headline-large-line-height: 40px;
+  --md-sys-typescale-headline-large-weight: 500;
+  --md-sys-typescale-headline-medium-font: var(--md-ref-typeface-brand);
+  --md-sys-typescale-headline-medium-size: 28px;
+  --md-sys-typescale-headline-medium-line-height: 36px;
+  --md-sys-typescale-headline-medium-weight: 500;
+  --md-sys-typescale-headline-small-font: var(--md-ref-typeface-brand);
+  --md-sys-typescale-headline-small-size: 24px;
+  --md-sys-typescale-headline-small-line-height: 32px;
+  --md-sys-typescale-headline-small-weight: 500;
+  --md-sys-typescale-title-large-font: var(--md-ref-typeface-brand);
+  --md-sys-typescale-title-large-size: 22px;
+  --md-sys-typescale-title-large-line-height: 28px;
+  --md-sys-typescale-title-large-weight: 500;
+  --md-sys-typescale-title-medium-font: var(--md-ref-typeface-plain);
+  --md-sys-typescale-title-medium-size: 16px;
+  --md-sys-typescale-title-medium-line-height: 24px;
+  --md-sys-typescale-title-medium-weight: 500;
+  --md-sys-typescale-title-small-font: var(--md-ref-typeface-plain);
+  --md-sys-typescale-title-small-size: 14px;
+  --md-sys-typescale-title-small-line-height: 20px;
+  --md-sys-typescale-title-small-weight: 500;
+  --md-sys-typescale-body-large-font: var(--md-ref-typeface-plain);
+  --md-sys-typescale-body-large-size: 16px;
+  --md-sys-typescale-body-large-line-height: 24px;
+  --md-sys-typescale-body-large-weight: 400;
+  --md-sys-typescale-body-medium-font: var(--md-ref-typeface-plain);
+  --md-sys-typescale-body-medium-size: 14px;
+  --md-sys-typescale-body-medium-line-height: 20px;
+  --md-sys-typescale-body-medium-weight: 400;
+  --md-sys-typescale-body-small-font: var(--md-ref-typeface-plain);
+  --md-sys-typescale-body-small-size: 12px;
+  --md-sys-typescale-body-small-line-height: 16px;
+  --md-sys-typescale-body-small-weight: 400;
+  --md-sys-typescale-label-large-font: var(--md-ref-typeface-plain);
+  --md-sys-typescale-label-large-size: 14px;
+  --md-sys-typescale-label-large-line-height: 20px;
+  --md-sys-typescale-label-large-weight: 600;
+  --md-sys-typescale-label-medium-font: var(--md-ref-typeface-plain);
+  --md-sys-typescale-label-medium-size: 12px;
+  --md-sys-typescale-label-medium-line-height: 16px;
+  --md-sys-typescale-label-medium-weight: 600;
+  --md-sys-typescale-label-small-font: var(--md-ref-typeface-plain);
+  --md-sys-typescale-label-small-size: 11px;
+  --md-sys-typescale-label-small-line-height: 16px;
+  --md-sys-typescale-label-small-weight: 600;
+
+  /* Expressive defaults for the official Material Web components. */
+  --md-filled-button-container-height: 44px;
+  --md-filled-button-container-shape: var(--md-sys-shape-corner-full);
+  --md-filled-tonal-button-container-height: 44px;
+  --md-filled-tonal-button-container-shape: var(--md-sys-shape-corner-full);
+  --md-outlined-button-container-height: 44px;
+  --md-outlined-button-container-shape: var(--md-sys-shape-corner-full);
+  --md-text-button-container-height: 44px;
+  --md-text-button-container-shape: var(--md-sys-shape-corner-full);
+
+  /* Roomier button padding — default Material spacing feels cramped, and labels
+     were sticking to the button edges (esp. with a leading icon). */
+  --md-filled-button-leading-space: 28px;
+  --md-filled-button-trailing-space: 28px;
+  --md-filled-button-with-leading-icon-leading-space: 22px;
+  --md-filled-button-with-leading-icon-trailing-space: 28px;
+  --md-filled-button-with-trailing-icon-leading-space: 28px;
+  --md-filled-button-with-trailing-icon-trailing-space: 22px;
+  --md-filled-tonal-button-leading-space: 28px;
+  --md-filled-tonal-button-trailing-space: 28px;
+  --md-filled-tonal-button-with-leading-icon-leading-space: 22px;
+  --md-filled-tonal-button-with-leading-icon-trailing-space: 28px;
+  --md-filled-tonal-button-with-trailing-icon-leading-space: 28px;
+  --md-filled-tonal-button-with-trailing-icon-trailing-space: 22px;
+  --md-outlined-button-leading-space: 28px;
+  --md-outlined-button-trailing-space: 28px;
+  --md-outlined-button-with-leading-icon-leading-space: 22px;
+  --md-outlined-button-with-leading-icon-trailing-space: 28px;
+  --md-text-button-leading-space: 18px;
+  --md-text-button-trailing-space: 18px;
+  --md-text-button-with-leading-icon-leading-space: 16px;
+  --md-text-button-with-leading-icon-trailing-space: 20px;
+
+  --md-assist-chip-container-height: 36px;
+  --md-assist-chip-container-shape: var(--md-sys-shape-corner-full);
+  --md-filter-chip-container-height: 36px;
+  --md-filter-chip-container-shape: var(--md-sys-shape-corner-full);
+  --md-icon-button-state-layer-shape: var(--md-sys-shape-corner-full);
+  --md-filled-tonal-icon-button-container-shape: var(--md-sys-shape-corner-full);
+  --md-linear-progress-track-shape: var(--md-sys-shape-corner-full);
+  --md-linear-progress-active-indicator-shape: var(--md-sys-shape-corner-full);
+  --md-focus-ring-color: var(--md-sys-color-primary);
+  --md-focus-ring-width: 3px;
+  --md-focus-ring-duration: var(--md-sys-motion-duration-short4);
+}
+
+/* Compatibility contract for Tailwind/shadcn primitives still in secondary UI. */
+:root,
+.dark,
+.ww-light {
+  --font-size: 16px;
+  --background: var(--md-sys-color-background);
+  --foreground: var(--md-sys-color-on-background);
+  --card: var(--md-sys-color-surface-container-low);
+  --card-foreground: var(--md-sys-color-on-surface);
+  --popover: var(--md-sys-color-surface-container);
+  --popover-foreground: var(--md-sys-color-on-surface);
+  --primary: var(--md-sys-color-primary);
+  --primary-foreground: var(--md-sys-color-on-primary);
+  --secondary: var(--md-sys-color-secondary-container);
+  --secondary-foreground: var(--md-sys-color-on-secondary-container);
+  --muted: var(--md-sys-color-surface-container-high);
+  --muted-foreground: var(--md-sys-color-on-surface-variant);
+  --accent: var(--md-sys-color-primary-container);
+  --accent-foreground: var(--md-sys-color-on-primary-container);
+  --destructive: var(--md-sys-color-error);
+  --destructive-foreground: var(--md-sys-color-on-error);
+  --border: var(--md-sys-color-outline-variant);
+  --input: var(--md-sys-color-surface-container-high);
+  --input-background: var(--md-sys-color-surface-container-high);
+  --switch-background: var(--md-sys-color-outline);
+  --ring: var(--md-sys-color-primary);
+  --radius: var(--md-sys-shape-corner-medium);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --chart-1: var(--md-sys-color-primary);
+  --chart-2: var(--ww-color-success);
+  --chart-3: var(--ww-color-warning);
+  --chart-4: var(--md-sys-color-tertiary);
+  --chart-5: var(--md-sys-color-secondary);
+  --sidebar: var(--md-sys-color-surface-container-low);
+  --sidebar-foreground: var(--md-sys-color-on-surface);
+  --sidebar-primary: var(--md-sys-color-primary);
+  --sidebar-primary-foreground: var(--md-sys-color-on-primary);
+  --sidebar-accent: var(--md-sys-color-secondary-container);
+  --sidebar-accent-foreground: var(--md-sys-color-on-secondary-container);
+  --sidebar-border: var(--md-sys-color-outline-variant);
+  --sidebar-ring: var(--md-sys-color-primary);
+
+  /* Legacy Wallwize aliases. New work should prefer --md-sys-* directly. */
+  --w-bg-void: var(--md-sys-color-surface-container-lowest);
+  --w-bg-base: var(--md-sys-color-surface);
+  --w-bg-surface: var(--md-sys-color-surface-container-low);
+  --w-bg-raised: var(--md-sys-color-surface-container);
+  --w-bg-interactive: var(--md-sys-color-surface-container-high);
+  --w-bg-active: var(--md-sys-color-primary-container);
+  --w-border-faint: color-mix(in srgb, var(--md-sys-color-outline-variant) 45%, transparent);
+  --w-border-default: var(--md-sys-color-outline-variant);
+  --w-border-strong: var(--md-sys-color-outline);
+  --w-text-100: var(--md-sys-color-on-surface);
+  --w-text-70: var(--md-sys-color-on-surface-variant);
+  --w-text-40: var(--md-sys-color-outline);
+  --w-iris: var(--md-sys-color-primary);
+  --w-iris-dim: var(--md-sys-color-primary-container);
+  --w-iris-bright: var(--md-sys-color-primary);
+  --w-iris-tint: color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
+  --w-iris-glow: color-mix(in srgb, var(--md-sys-color-primary) 24%, transparent);
+  --w-emerald: var(--ww-color-success);
+  --w-emerald-tint: color-mix(in srgb, var(--ww-color-success) 12%, transparent);
+  --w-amber: var(--ww-color-warning);
+  --w-amber-tint: color-mix(in srgb, var(--ww-color-warning) 14%, transparent);
+  --w-rose: var(--md-sys-color-error);
+  --w-rose-tint: color-mix(in srgb, var(--md-sys-color-error) 12%, transparent);
 }
 
 @theme inline {
@@ -105,10 +503,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: var(--md-sys-shape-corner-small);
+  --radius-md: var(--md-sys-shape-corner-medium);
+  --radius-lg: var(--md-sys-shape-corner-large);
+  --radius-xl: var(--md-sys-shape-corner-large-increased);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -117,65 +515,4 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
-
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
-
-  html {
-    font-size: var(--font-size);
-  }
-
-  h1 {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h2 {
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h3 {
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  h4 {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  label {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  button {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
-  }
-
-  input {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
-    line-height: 1.5;
-  }
 }
