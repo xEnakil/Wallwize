@@ -1,109 +1,22 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+@import './globals.css';
+@import './views.css';
 
-/* ================================================================
-   Midnight Canvas · Iris Glass Design System · Wallwize
-   ================================================================ */
+/*
+ * Transitional component hooks.
+ *
+ * Existing views still use these class names and --w-* aliases. Their visual
+ * behavior now follows Material 3 roles, states, shape, and motion so old and
+ * newly refactored surfaces remain coherent during the redesign.
+ */
 
-/* ── Dark mode tokens (default) ────────────────────────────────── */
-:root {
-  --w-bg-void:         #06080E;
-  --w-bg-base:         #0C0F18;
-  --w-bg-surface:      #111521;
-  --w-bg-raised:       #161B28;
-  --w-bg-interactive:  #1C2133;
-  --w-bg-active:       #212745;
-
-  --w-border-faint:    rgba(148, 163, 200, 0.05);
-  --w-border-default:  rgba(148, 163, 200, 0.09);
-  --w-border-strong:   rgba(148, 163, 200, 0.20);
-
-  --w-text-100: #E2E8F9;
-  --w-text-70:  #7C8DB5;
-  --w-text-40:  #3A4B65;
-
-  --w-iris:        #6366F1;
-  --w-iris-dim:    #4F46E5;
-  --w-iris-bright: #818CF8;
-  --w-iris-tint:   rgba(99,  102, 241, 0.12);
-  --w-iris-glow:   rgba(99,  102, 241, 0.26);
-
-  --w-emerald:      #10B981;
-  --w-emerald-tint: rgba(16,  185, 129, 0.12);
-  --w-amber:        #F59E0B;
-  --w-amber-tint:   rgba(245, 158,  11, 0.12);
-  --w-rose:         #F43F5E;
-  --w-rose-tint:    rgba(244,  63,  94, 0.12);
-}
-
-/* ── Light mode override ────────────────────────────────────────── */
-.ww-light {
-  --w-bg-void:         #EDF1FF;
-  --w-bg-base:         #F4F7FF;
-  --w-bg-surface:      #FFFFFF;
-  --w-bg-raised:       #FFFFFF;
-  --w-bg-interactive:  #EDF0FF;
-  --w-bg-active:       #E1E7FF;
-
-  --w-border-faint:    rgba(30,  41, 80, 0.05);
-  --w-border-default:  rgba(30,  41, 80, 0.09);
-  --w-border-strong:   rgba(30,  41, 80, 0.20);
-
-  --w-text-100: #0F172A;
-  --w-text-70:  #475569;
-  --w-text-40:  #94A3B8;
-
-  --w-iris:        #4F46E5;
-  --w-iris-dim:    #4338CA;
-  --w-iris-bright: #6366F1;
-  --w-iris-tint:   rgba(79,  70, 229, 0.08);
-  --w-iris-glow:   rgba(79,  70, 229, 0.18);
-
-  --w-emerald:      #059669;
-  --w-emerald-tint: rgba(5,  150, 105, 0.08);
-  --w-amber:        #D97706;
-  --w-amber-tint:   rgba(217, 119,   6, 0.10);
-  --w-rose:         #E11D48;
-  --w-rose-tint:    rgba(225,  29,  72, 0.10);
-}
-
-/* ── Base reset ─────────────────────────────────────────────────── */
-html, body, #root {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: var(--w-bg-void);
-  font-family: 'Segoe UI Variable Display', 'Segoe UI Variable Text',
-    'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
-}
-
-* {
-  box-sizing: border-box;
-  scrollbar-color: var(--w-bg-interactive) var(--w-bg-base);
-  scrollbar-width: thin;
-}
-
-*::-webkit-scrollbar            { width: 7px; height: 7px; }
-*::-webkit-scrollbar-track      { background: var(--w-bg-base); }
-*::-webkit-scrollbar-thumb      {
-  min-height: 40px;
-  border: 2px solid var(--w-bg-base);
-  border-radius: 999px;
-  background: var(--w-bg-interactive);
-}
-*::-webkit-scrollbar-thumb:hover { background: var(--w-text-40); }
-*::-webkit-scrollbar-corner      { background: var(--w-bg-base); }
-
-button, img { -webkit-user-select: none; user-select: none; }
-
-/* ── Window chrome ─────────────────────────────────────────────── */
 .wallwize-window-shell {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--w-border-strong);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
 }
 
 .wallwize-titlebar,
@@ -111,207 +24,559 @@ button, img { -webkit-user-select: none; user-select: none; }
   app-region: drag;
   -webkit-app-region: drag;
 }
+
 .wallwize-window-controls,
 .wallwize-window-controls button,
-button, input, select, textarea {
+button,
+input,
+select,
+textarea,
+md-filled-button,
+md-filled-tonal-button,
+md-outlined-button,
+md-text-button,
+md-icon-button,
+md-filled-tonal-icon-button,
+md-assist-chip,
+md-filter-chip,
+md-checkbox,
+md-switch,
+md-slider {
   app-region: no-drag;
   -webkit-app-region: no-drag;
 }
 
-/* ── Nav item ──────────────────────────────────────────────────── */
 .ww-nav-item {
-  color: var(--w-text-70);
+  position: relative;
+  color: var(--md-sys-color-on-surface-variant);
   background: transparent;
-  border-radius: 8px;
-  transition: background 0.12s ease, color 0.12s ease;
+  border-radius: var(--md-sys-shape-corner-large);
   cursor: pointer;
+  transition:
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
 }
+
 .ww-nav-item:hover {
-  background: var(--w-bg-interactive);
-  color: var(--w-text-100);
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+  color: var(--md-sys-color-on-surface);
 }
+
+.ww-nav-item:active {
+  transform: scale(0.97);
+}
+
 .ww-nav-active {
-  color: var(--w-text-100) !important;
-  background: var(--w-iris-tint) !important;
-  box-shadow: inset 3px 0 0 var(--w-iris) !important;
+  color: var(--md-sys-color-on-secondary-container) !important;
+  background: var(--md-sys-color-secondary-container) !important;
 }
+
 .ww-nav-active .ww-nav-icon {
-  color: var(--w-iris-bright) !important;
+  color: var(--md-sys-color-on-secondary-container) !important;
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 
-/* ── Primary action button ─────────────────────────────────────── */
-.ww-btn-primary {
-  background: var(--w-iris);
-  color: white;
-  border: none;
-  box-shadow: 0 1px 6px var(--w-iris-glow), 0 1px 2px rgba(0, 0, 0, 0.25);
-  transition: opacity 0.15s ease, box-shadow 0.15s ease, transform 0.10s ease;
-  cursor: pointer;
-}
-.ww-btn-primary:hover:not(:disabled) {
-  opacity: 0.88;
-  box-shadow: 0 3px 16px var(--w-iris-glow), 0 1px 3px rgba(0, 0, 0, 0.30);
-  transform: translateY(-1px);
-}
-.ww-btn-primary:active:not(:disabled) { transform: translateY(0); }
-.ww-btn-primary:disabled { opacity: 0.35; box-shadow: none; cursor: not-allowed; }
-
-/* ── Ghost button ──────────────────────────────────────────────── */
-.ww-btn-ghost {
-  background: var(--w-bg-interactive);
-  color: var(--w-text-100);
-  border: 1px solid var(--w-border-default);
-  transition: background 0.12s ease, border-color 0.12s ease;
-  cursor: pointer;
-}
-.ww-btn-ghost:hover:not(:disabled) {
-  background: var(--w-bg-active);
-  border-color: var(--w-border-strong);
-}
-.ww-btn-ghost:disabled { opacity: 0.38; cursor: not-allowed; }
-
-/* ── Success button ────────────────────────────────────────────── */
+.ww-btn-primary,
+.ww-btn-ghost,
 .ww-btn-success {
-  background: var(--w-emerald-tint);
-  color: var(--w-emerald);
-  border: 1px solid var(--w-emerald-tint);
-  transition: background 0.12s ease, opacity 0.12s ease;
+  min-height: 40px;
+  border-radius: var(--md-sys-shape-corner-full) !important;
+  font-family: var(--md-sys-typescale-label-large-font);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  line-height: var(--md-sys-typescale-label-large-line-height);
   cursor: pointer;
+  transition:
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
 }
-.ww-btn-success:hover:not(:disabled) {
-  background: var(--w-emerald);
-  color: white;
-  border-color: var(--w-emerald);
-}
-.ww-btn-success:disabled { opacity: 0.38; cursor: not-allowed; }
 
-/* ── Chip / filter pill ────────────────────────────────────────── */
+.ww-btn-primary {
+  border: 1px solid transparent;
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  box-shadow: var(--md-sys-elevation-level0);
+}
+
+.ww-btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--md-sys-color-on-primary) 8%, var(--md-sys-color-primary));
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+.ww-btn-ghost {
+  border: 1px solid transparent;
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.ww-btn-ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--md-sys-color-on-secondary-container) 8%, var(--md-sys-color-secondary-container));
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+.ww-btn-success {
+  border: 1px solid transparent;
+  background: var(--ww-color-success-container);
+  color: var(--ww-color-on-success-container);
+}
+
+.ww-btn-success:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ww-color-on-success-container) 8%, var(--ww-color-success-container));
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+.ww-btn-primary:active:not(:disabled),
+.ww-btn-ghost:active:not(:disabled),
+.ww-btn-success:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+.ww-btn-primary:disabled,
+.ww-btn-ghost:disabled,
+.ww-btn-success:disabled {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
 .ww-chip {
-  background: var(--w-bg-interactive);
-  color: var(--w-text-70);
-  border: 1px solid var(--w-border-default);
-  border-radius: 999px;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: var(--md-sys-shape-corner-full) !important;
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: var(--md-sys-typescale-label-large-font);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
   cursor: pointer;
   white-space: nowrap;
+  transition:
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-spring-spatial-fast-duration) var(--md-sys-motion-spring-spatial-fast);
 }
+
 .ww-chip:hover {
-  background: var(--w-bg-active);
-  color: var(--w-text-100);
-  border-color: var(--w-border-strong);
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
 }
+
+.ww-chip:active {
+  transform: scale(0.93);
+}
+
 .ww-chip-active {
-  background: var(--w-iris-tint) !important;
-  color: var(--w-iris-bright) !important;
-  border-color: rgba(99, 102, 241, 0.25) !important;
+  border-color: transparent !important;
+  background: var(--md-sys-color-secondary-container) !important;
+  color: var(--md-sys-color-on-secondary-container) !important;
 }
 
-/* ── Wallpaper card ────────────────────────────────────────────── */
 .wallwize-wallpaper-card {
-  contain: strict;
-  transform: translateZ(0);
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
-  border-radius: 12px;
+  contain: layout paint style;
   overflow: hidden;
-}
-.wallwize-wallpaper-card:hover {
-  transform: translateZ(0) scale(1.02);
+  border-radius: var(--md-sys-shape-corner-large-increased) !important;
+  transform: translateZ(0);
+  transition:
+    border-radius var(--md-sys-motion-spring-bouncy-duration) var(--md-sys-motion-spring-bouncy),
+    box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-spring-bouncy-duration) var(--md-sys-motion-spring-bouncy);
 }
 
-/* ── Library scroll ────────────────────────────────────────────── */
+.wallwize-wallpaper-card:hover {
+  border-radius: var(--md-sys-shape-corner-extra-large) !important;
+  transform: translateZ(0) translateY(-5px) scale(1.03);
+  box-shadow: var(--md-sys-elevation-level4);
+}
+
+.wallwize-wallpaper-card:active {
+  border-radius: var(--md-sys-shape-corner-medium) !important;
+  transform: translateZ(0) scale(0.94);
+  transition-duration: var(--md-sys-motion-duration-short2);
+}
+
 .wallwize-library-scroll {
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
+  /* Soft fade at the top edge so cards melt away instead of hard-cutting. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 16px);
 }
 
-/* ── Animations ────────────────────────────────────────────────── */
 .wallwize-indeterminate-bar {
-  width: 40%;
-  animation: ww-indeterminate 1.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  width: 42%;
+  animation: ww-indeterminate var(--md-sys-motion-duration-long4) var(--md-sys-motion-easing-emphasized) infinite;
   transform-origin: left center;
 }
 
 @keyframes ww-indeterminate {
-  0%   { transform: translateX(-125%) scaleX(0.8); opacity: 0.3; }
-  50%  { opacity: 1; }
-  100% { transform: translateX(270%) scaleX(1);   opacity: 0.35; }
+  0% {
+    opacity: 0.35;
+    transform: translateX(-130%) scaleX(0.72);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.45;
+    transform: translateX(275%) scaleX(1);
+  }
 }
 
 @keyframes ww-fade-in-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 @keyframes ww-slide-in-right {
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes ww-scale-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.ww-fade-in-up    { animation: ww-fade-in-up     0.22s ease-out both; }
-.ww-slide-in-right { animation: ww-slide-in-right 0.22s ease-out both; }
-.ww-scale-in      { animation: ww-scale-in        0.18s ease-out both; }
+.ww-fade-in-up {
+  animation: ww-fade-in-up var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
 
-/* ── Confidence bar gradient ───────────────────────────────────── */
-.ww-confidence-high   { background: var(--w-emerald); }
-.ww-confidence-medium { background: var(--w-amber); }
-.ww-confidence-low    { background: var(--w-rose); }
+.ww-slide-in-right {
+  animation: ww-slide-in-right var(--md-sys-motion-spring-spatial-slow-duration) var(--md-sys-motion-spring-spatial-slow) both;
+}
 
-/* ── Section label ─────────────────────────────────────────────── */
+.ww-details-thumb {
+  transition: border-radius var(--md-sys-motion-spring-spatial-default-duration)
+    var(--md-sys-motion-spring-spatial-default);
+}
+
+.ww-details-thumb:hover {
+  border-radius: var(--md-sys-shape-corner-extra-large-increased);
+}
+
+.ww-scale-in {
+  animation: ww-scale-in var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.ww-confidence-high {
+  background: var(--ww-color-success);
+}
+
+.ww-confidence-medium {
+  background: var(--ww-color-warning);
+}
+
+.ww-confidence-low {
+  background: var(--md-sys-color-error);
+}
+
 .ww-section-label {
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--w-text-40);
   display: block;
   margin-bottom: 8px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: var(--md-sys-typescale-label-medium-font);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  font-weight: var(--md-sys-typescale-label-medium-weight);
+  line-height: var(--md-sys-typescale-label-medium-line-height);
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
-/* ── Input ─────────────────────────────────────────────────────── */
 .ww-input {
-  background: var(--w-bg-base);
-  border: 1px solid var(--w-border-default);
-  color: var(--w-text-100);
-  border-radius: 8px;
-  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: var(--md-sys-shape-corner-full) !important;
   outline: none;
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  transition:
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
 }
-.ww-input:focus {
-  border-color: var(--w-iris);
-  box-shadow: 0 0 0 3px var(--w-iris-tint);
-}
-.ww-input::placeholder { color: var(--w-text-40); }
 
-/* ── Card / panel ──────────────────────────────────────────────── */
+.ww-input:hover {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+.ww-input:focus,
+.ww-input:focus-within {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent);
+}
+
+.ww-input::placeholder,
+.ww-input input::placeholder {
+  color: var(--md-sys-color-outline);
+}
+
 .ww-card {
-  background: var(--w-bg-raised);
-  border: 1px solid var(--w-border-default);
-  border-radius: 12px;
+  border-radius: var(--md-sys-shape-corner-large) !important;
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface);
 }
 
-/* ── Range slider accent ───────────────────────────────────────── */
 input[type='range'] {
-  accent-color: var(--w-iris);
+  accent-color: var(--md-sys-color-primary);
   cursor: pointer;
 }
 
-/* ── Checkbox accent ───────────────────────────────────────────── */
 input[type='checkbox'],
 input[type='radio'] {
-  accent-color: var(--w-iris);
+  accent-color: var(--md-sys-color-primary);
   cursor: pointer;
 }
 
-/* ── Table ─────────────────────────────────────────────────────── */
 .ww-table-row {
-  border-bottom: 1px solid var(--w-border-faint);
-  transition: background 0.10s ease;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
 }
+
 .ww-table-row:hover {
-  background: var(--w-bg-interactive);
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent);
+}
+
+/* Keep official Material elements aligned with the compact desktop density. */
+md-filled-button,
+md-filled-tonal-button,
+md-outlined-button,
+md-text-button,
+md-assist-chip,
+md-filter-chip {
+  vertical-align: middle;
+  font-family: var(--md-ref-typeface-plain);
+}
+
+/* Expressive press feedback: every Material button springs and squishes. */
+md-filled-button,
+md-filled-tonal-button,
+md-outlined-button,
+md-text-button,
+md-icon-button,
+md-filled-tonal-icon-button,
+md-assist-chip,
+md-filter-chip {
+  transition: transform var(--md-sys-motion-spring-bouncy-duration) var(--md-sys-motion-spring-bouncy);
+}
+
+md-filled-button:active,
+md-filled-tonal-button:active,
+md-outlined-button:active,
+md-text-button:active,
+md-assist-chip:active,
+md-filter-chip:active {
+  transform: scale(0.93);
+}
+
+md-icon-button:active,
+md-filled-tonal-icon-button:active {
+  transform: scale(0.86);
+}
+
+md-icon-button,
+md-filled-tonal-icon-button {
+  flex: 0 0 auto;
+  vertical-align: middle;
+}
+
+md-linear-progress {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--md-sys-shape-corner-full);
+}
+
+md-slider {
+  width: 100%;
+}
+
+/* =========================================================================
+ * Material 3 Expressive utilities
+ * Bold shapes, spring motion, and emphasized type shared across every view.
+ * ========================================================================= */
+
+/* Brand wordmark in the (seamless) title bar. */
+.ww-wordmark {
+  font-family: var(--md-ref-typeface-brand);
+  font-size: 15px;
+  line-height: 1;
+  font-variation-settings: 'opsz' 20, 'wdth' 112, 'wght' 720, 'GRAD' 40;
+  letter-spacing: 0.01em;
+  background: linear-gradient(
+    105deg,
+    var(--md-sys-color-primary) 8%,
+    var(--md-sys-color-tertiary) 92%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Hero + emphasized typography via Roboto Flex variable axes. */
+.ww-display-hero {
+  font-family: var(--md-ref-typeface-brand);
+  font-weight: var(--md-sys-typescale-emphasized-display-weight);
+  font-variation-settings: 'opsz' 40, 'wdth' 105, 'wght' 660, 'GRAD' 14;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+
+.ww-type-headline-emphasized {
+  font-family: var(--md-ref-typeface-brand);
+  font-weight: var(--md-sys-typescale-emphasized-headline-weight);
+  font-variation-settings: 'opsz' 28, 'wght' 600, 'GRAD' 0;
+  letter-spacing: -0.015em;
+}
+
+.ww-type-title-emphasized {
+  font-weight: var(--md-sys-typescale-emphasized-title-weight);
+  letter-spacing: 0;
+}
+
+/* Bento surface: the building block of the expressive layout. */
+.ww-bento {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: var(--md-sys-color-surface-container-low);
+  transition:
+    transform var(--md-sys-motion-spring-bouncy-duration) var(--md-sys-motion-spring-bouncy),
+    box-shadow var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    border-radius var(--md-sys-motion-spring-bouncy-duration) var(--md-sys-motion-spring-bouncy);
+}
+
+.ww-bento-interactive {
+  cursor: pointer;
+}
+
+.ww-bento-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--md-sys-elevation-level2);
+  border-radius: var(--md-sys-shape-corner-extra-large-increased);
+}
+
+.ww-bento-interactive:active {
+  transform: translateY(0) scale(0.985);
+  border-radius: var(--md-sys-shape-corner-large);
+  transition-duration: var(--md-sys-motion-duration-short2);
+}
+
+/* Shape-morph press for pill controls: squish + round-down on press. */
+.ww-morph {
+  transition:
+    border-radius var(--md-sys-motion-spring-spatial-fast-duration) var(--md-sys-motion-spring-spatial-fast),
+    transform var(--md-sys-motion-spring-spatial-fast-duration) var(--md-sys-motion-spring-spatial-fast),
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.ww-morph:active:not(:disabled) {
+  transform: scale(0.93);
+  border-radius: var(--ww-shape-morph-button-pressed) !important;
+}
+
+/* Spring reveal animations. prefers-reduced-motion is neutralized in globals.css. */
+@keyframes ww-spring-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes ww-spring-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ww-reveal {
+  animation: ww-spring-rise var(--md-sys-motion-spring-bouncy-soft-duration)
+    var(--md-sys-motion-spring-bouncy-soft) both;
+}
+
+.ww-pop {
+  animation: ww-spring-pop var(--md-sys-motion-spring-bouncy-duration)
+    var(--md-sys-motion-spring-bouncy) both;
+}
+
+/* Springy brand / shield marks in the navigation rail. */
+.ww-brand-mark {
+  transition:
+    transform var(--md-sys-motion-spring-bouncy-duration) var(--md-sys-motion-spring-bouncy),
+    border-radius var(--md-sys-motion-spring-bouncy-duration) var(--md-sys-motion-spring-bouncy);
+}
+
+.ww-brand-mark:hover {
+  transform: scale(1.08);
+}
+
+/* Navigation-rail hover state layer for inactive items. */
+.ww-nav-hover {
+  transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.ww-navigation-rail button:hover .ww-nav-hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+
+/* Wavy underline accent used on expressive section headers. */
+.ww-wavy-accent {
+  height: 6px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: linear-gradient(
+    90deg,
+    var(--md-sys-color-primary),
+    var(--md-sys-color-tertiary)
+  );
+}
+
+/* Menu / popover spring pop-in. */
+@keyframes ww-menu-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.ww-menu-pop {
+  transform-origin: top right;
+  animation: ww-menu-pop var(--md-sys-motion-spring-bouncy-soft-duration)
+    var(--md-sys-motion-spring-bouncy-soft) both;
 }
