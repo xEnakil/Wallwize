@@ -1,6 +1,10 @@
-import { AlertCircle, Download, Eye, FileText, LoaderCircle, Play, Sparkles } from 'lucide-react';
-import { type ReactNode } from 'react';
 import { InlineTaskLabel } from './TaskStatus';
+import {
+  MaterialSymbol,
+  MdFilledButton,
+  MdSlider,
+  MdSwitch,
+} from '../material/components';
 import { BusyTask, WallwizeSettings, WallwizeStats } from '../types';
 
 interface AIAnalysisViewProps {
@@ -13,10 +17,10 @@ interface AIAnalysisViewProps {
 }
 
 const profiles = [
-  { id: 'off',      name: 'Rules Only',  desc: 'Filename patterns, OLED detection, discovered folder groupings', size: '—' },
-  { id: 'small',    name: 'Small',       desc: 'Fast local AI, great for quick sorting of large collections',    size: '~400 MB' },
-  { id: 'balanced', name: 'Balanced',    desc: 'Better category accuracy with moderate processing speed',         size: '~1.2 GB' },
-  { id: 'large',    name: 'Large',       desc: 'Highest accuracy, takes longer on large sets',                   size: '~3.5 GB' },
+  { id: 'off', name: 'Rules', short: 'No model download', size: 'Local rules' },
+  { id: 'small', name: 'Quick', short: 'Fast on large libraries', size: '~400 MB' },
+  { id: 'balanced', name: 'Balanced', short: 'Recommended accuracy', size: '~1.2 GB' },
+  { id: 'large', name: 'Precise', short: 'Best category matching', size: '~3.5 GB' },
 ] as const;
 
 export function AIAnalysisView({
@@ -27,271 +31,146 @@ export function AIAnalysisView({
   onSettingsChange,
   onRunPlan,
 }: AIAnalysisViewProps) {
+  const confidencePercent = Math.round(settings.visionMinConfidence * 100);
+  const currentProfile = profiles.find((profile) => profile.id === settings.visionProfile) ?? profiles[0];
+
   return (
-    <div className="flex flex-1 flex-col">
-      {/* Header */}
-      <div
-        className="flex items-center justify-between gap-4 px-4 py-3"
-        style={{
-          background: 'var(--w-bg-raised)',
-          borderBottom: '1px solid var(--w-border-default)',
-        }}
-      >
-        <div>
-          <h2 className="text-[14px] font-semibold" style={{ color: 'var(--w-text-100)' }}>
-            AI Analysis
-          </h2>
-          <p className="text-[12px]" style={{ color: 'var(--w-text-70)' }}>
-            Configure local vision models and confidence thresholds
-          </p>
+    <section className="ww-page" aria-labelledby="ai-title">
+      <header className="ww-page-header">
+        <div className="ww-page-copy">
+          <span className="ww-eyebrow">On-device intelligence</span>
+          <h1 id="ai-title" className="ww-page-title">Rules &amp; AI</h1>
+          <p className="ww-page-support">Tune how confidently Wallwize understands and routes each image.</p>
         </div>
         {busyTask && <InlineTaskLabel task={busyTask} />}
-      </div>
+      </header>
 
-      <div className="flex-1 overflow-auto p-6" style={{ background: 'var(--w-bg-base)' }}>
-        <div className="mx-auto max-w-[620px] space-y-4">
-
-          {/* Model Profile */}
-          <div className="ww-card p-5">
-            <h3 className="mb-1 text-[13px] font-semibold" style={{ color: 'var(--w-text-100)' }}>
-              Model Profile
-            </h3>
-            <p className="mb-4 text-[12px]" style={{ color: 'var(--w-text-70)' }}>
-              Choose how Wallwize categorizes your images. Larger models are more accurate but require more disk space.
-            </p>
-
-            <div className="space-y-2">
-              {profiles.map((profile) => {
-                const isSelected = settings.visionProfile === profile.id;
-                return (
-                  <label
-                    key={profile.id}
-                    className="flex cursor-pointer items-start gap-3 rounded-xl p-3.5 transition-all"
-                    style={{
-                      background: isSelected ? 'var(--w-iris-tint)' : 'var(--w-bg-interactive)',
-                      border: '1px solid',
-                      borderColor: isSelected ? 'rgba(99,102,241,0.25)' : 'var(--w-border-default)',
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name="model"
-                      checked={isSelected}
-                      disabled={busy}
-                      onChange={() => onSettingsChange({ visionProfile: profile.id })}
-                      className="mt-0.5 shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span
-                          className="text-[13px] font-semibold"
-                          style={{ color: isSelected ? 'var(--w-iris-bright)' : 'var(--w-text-100)' }}
-                        >
-                          {profile.name}
-                        </span>
-                        <span
-                          className="text-[11px] font-mono"
-                          style={{ color: 'var(--w-text-40)' }}
-                        >
-                          {profile.size}
-                        </span>
-                      </div>
-                      <p className="text-[11.5px]" style={{ color: 'var(--w-text-70)' }}>
-                        {profile.desc}
-                      </p>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Confidence Settings */}
-          <div className="ww-card p-5">
-            <h3 className="mb-4 text-[13px] font-semibold" style={{ color: 'var(--w-text-100)' }}>
-              Confidence Settings
-            </h3>
-
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-3">
+      <div className="ww-page-scroll">
+        <div className="ww-page-width ww-settings-grid">
+          <div className="ww-settings-main">
+            <section className="ww-surface-card ww-profile-section" aria-labelledby="profile-title">
+              <div className="ww-section-heading">
                 <div>
-                  <label className="text-[12.5px] font-medium" style={{ color: 'var(--w-text-100)' }}>
-                    Minimum Confidence Threshold
-                  </label>
-                  <p className="mt-0.5 text-[11px]" style={{ color: 'var(--w-text-70)' }}>
-                    Scores below this value won't route images to a category
-                  </p>
+                  <span className="ww-eyebrow">Processing profile</span>
+                  <h2 id="profile-title">Choose the right level</h2>
+                  <p>Everything runs on this device. Larger profiles trade speed and disk space for better recognition.</p>
                 </div>
-                <span
-                  className="ml-4 shrink-0 rounded-lg px-3 py-1 text-[14px] font-bold tabular-nums"
-                  style={{
-                    color: 'var(--w-iris-bright)',
-                    background: 'var(--w-iris-tint)',
-                    border: '1px solid rgba(99,102,241,0.2)',
-                  }}
-                >
-                  {Math.round(settings.visionMinConfidence * 100)}%
-                </span>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="90"
-                value={Math.round(settings.visionMinConfidence * 100)}
-                disabled={busy}
-                onChange={(e) => onSettingsChange({ visionMinConfidence: Number(e.target.value) / 100 })}
-                className="w-full"
-              />
-            </div>
-
-            <label
-              className="flex cursor-pointer items-center gap-3 rounded-xl p-3.5"
-              style={{
-                background: 'var(--w-bg-interactive)',
-                border: '1px solid var(--w-border-default)',
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={settings.visionLocalOnly}
-                disabled={busy}
-                onChange={(e) => onSettingsChange({ visionLocalOnly: e.target.checked })}
-              />
-              <div>
-                <div className="text-[12.5px] font-medium" style={{ color: 'var(--w-text-100)' }}>
-                  Local-only model loading
-                </div>
-                <div className="text-[11px]" style={{ color: 'var(--w-text-70)' }}>
-                  Only load packaged or already-cached model files — no network requests
+                <div className="ww-model-mark" aria-hidden="true">
+                  <MaterialSymbol fill opticalSize={40}>neurology</MaterialSymbol>
                 </div>
               </div>
-            </label>
-          </div>
 
-          {/* Model Status */}
-          <div className="ww-card p-5">
-            <h3 className="mb-4 text-[13px] font-semibold" style={{ color: 'var(--w-text-100)' }}>
-              Model Status
-            </h3>
+              <div className="ww-profile-picker" role="radiogroup" aria-label="Vision model profile">
+                {profiles.map((profile) => {
+                  const selected = settings.visionProfile === profile.id;
+                  return (
+                    <button
+                      key={profile.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      className={`ww-profile-option${selected ? ' is-selected' : ''}`}
+                      disabled={busy}
+                      onClick={() => onSettingsChange({ visionProfile: profile.id })}
+                    >
+                      <span className="ww-profile-radio" aria-hidden="true" />
+                      <strong>{profile.name}</strong>
+                      <span>{profile.short}</span>
+                      <small>{profile.size}</small>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
 
-            <div className="space-y-2 mb-4">
-              <StatusRow
-                indicator="var(--w-emerald)"
-                title="Selected Profile"
-                subtitle={settings.visionProfile === 'off' ? 'Rules-only mode active' : `${settings.visionProfile} CLIP model configured`}
-                badge="Configured"
-                badgeColor="var(--w-emerald)"
-                badgeBg="var(--w-emerald-tint)"
-              />
-              <StatusRow
-                indicator="var(--w-text-40)"
-                title="Model Cache"
-                subtitle="Stored with Wallwize app data"
-                badge="Auto"
-                badgeColor="var(--w-text-70)"
-                badgeBg="var(--w-bg-interactive)"
-                badgeIcon={<Download className="size-3" />}
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={onRunPlan}
-              disabled={busy}
-              className="ww-btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-semibold"
-            >
-              {busy
-                ? <><LoaderCircle className="size-4 animate-spin" /> Working…</>
-                : <><Play className="size-4" /> Run AI Categorization</>
-              }
-            </button>
-          </div>
-
-          {/* Stats */}
-          <div className="ww-card p-5">
-            <h3 className="mb-4 text-[13px] font-semibold" style={{ color: 'var(--w-text-100)' }}>
-              Current Results
-            </h3>
-
-            <div className="grid grid-cols-2 gap-2.5">
-              {[
-                { label: 'Library',      count: stats.library,      icon: Sparkles,    color: 'var(--w-iris-bright)' },
-                { label: 'Categories',   count: stats.categories,   icon: FileText,    color: '#38BDF8' },
-                { label: 'Review Queue', count: stats.reviewQueue,  icon: AlertCircle, color: 'var(--w-amber)' },
-                { label: 'Duplicates',   count: stats.duplicates,   icon: Eye,         color: 'var(--w-rose)' },
-              ].map(({ label, count, icon: Icon, color }) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-3 rounded-xl p-3.5"
-                  style={{
-                    background: 'var(--w-bg-interactive)',
-                    border: '1px solid var(--w-border-faint)',
-                  }}
-                >
-                  <div
-                    className="grid size-9 shrink-0 place-items-center rounded-lg"
-                    style={{ background: `${color}18`, border: `1px solid ${color}22` }}
-                  >
-                    <Icon className="size-4" style={{ color }} />
-                  </div>
-                  <div>
-                    <div className="text-[11px]" style={{ color: 'var(--w-text-70)' }}>{label}</div>
-                    <div className="text-[20px] font-bold tabular-nums leading-tight" style={{ color: 'var(--w-text-100)' }}>
-                      {count}
-                    </div>
-                  </div>
+            <section className="ww-surface-card" aria-labelledby="confidence-title">
+              <div className="ww-slider-heading">
+                <div>
+                  <span className="ww-eyebrow">Review threshold</span>
+                  <h2 id="confidence-title">Minimum confidence</h2>
+                  <p>Lower-scoring images wait for you in Review instead of being organized automatically.</p>
                 </div>
-              ))}
-            </div>
+                <output>{confidencePercent}%</output>
+              </div>
+              <MdSlider
+                min={10}
+                max={90}
+                value={confidencePercent}
+                disabled={busy}
+                aria-label="Minimum confidence threshold"
+                onInput={(event) => {
+                  const value = Number((event.currentTarget as unknown as { value: number }).value);
+                  onSettingsChange({ visionMinConfidence: value / 100 });
+                }}
+              />
+
+              <div className="ww-switch-row">
+                <div>
+                  <strong>Local-only model loading</strong>
+                  <span>Use packaged or cached model files without network requests.</span>
+                </div>
+                <MdSwitch
+                  selected={settings.visionLocalOnly}
+                  disabled={busy}
+                  aria-label="Local-only model loading"
+                  onChange={(event) => {
+                    const selected = Boolean((event.currentTarget as unknown as { selected: boolean }).selected);
+                    onSettingsChange({ visionLocalOnly: selected });
+                  }}
+                />
+              </div>
+            </section>
           </div>
+
+          <aside className="ww-settings-side">
+            <section className="ww-run-card">
+              <div className="ww-run-card-icon"><MaterialSymbol fill opticalSize={40}>auto_awesome</MaterialSymbol></div>
+              <span className="ww-eyebrow">Ready to analyze</span>
+              <h2>{currentProfile.name}</h2>
+              <p>{settings.visionProfile === 'off' ? 'Filename, OLED, and grouping rules' : `${currentProfile.size} local vision profile`}</p>
+              <MdFilledButton disabled={busy} onClick={onRunPlan}>
+                <MaterialSymbol slot="icon" fill>{busy ? 'progress_activity' : 'play_arrow'}</MaterialSymbol>
+                {busy ? 'Working…' : 'Run categorization'}
+              </MdFilledButton>
+            </section>
+
+            <section className="ww-results-card" aria-labelledby="results-title">
+              <div className="ww-section-heading ww-section-heading--compact">
+                <div>
+                  <span className="ww-eyebrow">Current plan</span>
+                  <h2 id="results-title">At a glance</h2>
+                </div>
+              </div>
+              <div className="ww-stat-list">
+                <ResultRow icon="photo_library" label="Library" count={stats.library} />
+                <ResultRow icon="folder_copy" label="Categories" count={stats.categories} />
+                <ResultRow icon="rate_review" label="Needs review" count={stats.reviewQueue} attention />
+                <ResultRow icon="content_copy" label="Duplicates" count={stats.duplicates} />
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-function StatusRow({
-  indicator,
-  title,
-  subtitle,
-  badge,
-  badgeColor,
-  badgeBg,
-  badgeIcon,
+function ResultRow({
+  icon,
+  label,
+  count,
+  attention = false,
 }: {
-  indicator: string;
-  title: string;
-  subtitle: string;
-  badge: string;
-  badgeColor: string;
-  badgeBg: string;
-  badgeIcon?: ReactNode;
+  icon: string;
+  label: string;
+  count: number;
+  attention?: boolean;
 }) {
   return (
-    <div
-      className="flex items-center justify-between rounded-xl px-3.5 py-3"
-      style={{
-        background: 'var(--w-bg-interactive)',
-        border: '1px solid var(--w-border-faint)',
-      }}
-    >
-      <div className="flex items-center gap-2.5">
-        <div
-          className="size-2 shrink-0 rounded-full"
-          style={{ background: indicator, boxShadow: `0 0 4px ${indicator}` }}
-        />
-        <div>
-          <div className="text-[12.5px] font-medium" style={{ color: 'var(--w-text-100)' }}>{title}</div>
-          <div className="text-[11px]" style={{ color: 'var(--w-text-40)' }}>{subtitle}</div>
-        </div>
-      </div>
-      <div
-        className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium"
-        style={{ background: badgeBg, color: badgeColor }}
-      >
-        {badgeIcon}
-        {badge}
-      </div>
+    <div className={`ww-stat-row${attention && count ? ' has-attention' : ''}`}>
+      <span><MaterialSymbol>{icon}</MaterialSymbol></span>
+      <p>{label}</p>
+      <strong>{count}</strong>
     </div>
   );
 }
