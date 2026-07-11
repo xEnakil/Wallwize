@@ -6,10 +6,10 @@
 
 <p align="center">
   <a href="https://github.com/xEnakil/Wallwize/actions/workflows/release.yml">
-    <img alt="Windows release workflow" src="https://img.shields.io/github/actions/workflow/status/xEnakil/Wallwize/release.yml?style=for-the-badge&label=release%20build&logo=githubactions&logoColor=white">
+    <img alt="Desktop release workflow" src="https://img.shields.io/github/actions/workflow/status/xEnakil/Wallwize/release.yml?style=for-the-badge&label=release%20build&logo=githubactions&logoColor=white">
   </a>
   <img alt="Version" src="https://img.shields.io/badge/version-0.8.0-6366F1?style=for-the-badge">
-  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows-111827?style=for-the-badge&logo=windows&logoColor=white">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-111827?style=for-the-badge&logo=apple&logoColor=white">
   <img alt="License" src="https://img.shields.io/badge/license-source--available-F59E0B?style=for-the-badge">
 </p>
 
@@ -18,7 +18,7 @@
     <td align="center">
       <sub><strong>Project</strong></sub><br>
       <a href="https://github.com/xEnakil/Wallwize/releases/latest">
-        <img alt="Download latest release" src="https://img.shields.io/badge/Download-Wallwize%20for%20Windows-6366F1?style=for-the-badge&logo=github&logoColor=white">
+        <img alt="Download latest release" src="https://img.shields.io/badge/Download-Wallwize%20Desktop-6366F1?style=for-the-badge&logo=github&logoColor=white">
       </a>
       <a href="https://github.com/xEnakil/Wallwize/issues">
         <img alt="Report an issue" src="https://img.shields.io/badge/Report-an%20issue-F43F5E?style=for-the-badge&logo=github&logoColor=white">
@@ -39,7 +39,7 @@
   </tr>
 </table>
 
-Wallwize is a local-first wallpaper organizer for Windows. I built it for the kind of wallpaper folder that starts as "a few nice images" and slowly turns into a beautiful, impossible-to-browse pile.
+Wallwize is a local-first wallpaper organizer for Windows and macOS. I built it for the kind of wallpaper folder that starts as "a few nice images" and slowly turns into a beautiful, impossible-to-browse pile.
 
 It scans your wallpapers, reads useful visual details, suggests categories, catches duplicates, and creates a safe copy or move plan before anything is organized. The desktop app gives you a calm visual library with confidence scores, review queues, category filters, and quick wallpaper actions.
 
@@ -70,10 +70,14 @@ Release builds include:
 - `Wallwize Setup 0.8.0.exe` - normal Windows installer with a Windows uninstaller.
 - `Wallwize Portable 0.8.0.exe` - single-file portable app that creates a `Wallwize Portable\Data` folder beside the EXE.
 - `Wallwize Folder Portable 0.8.0.zip` - extractable portable folder; app data, thumbnails, and local AI models stay inside the extracted folder.
+- `Wallwize 0.8.0-arm64.dmg` - normal drag-to-Applications build for Apple Silicon Macs.
+- `Wallwize 0.8.0-x64.dmg` - normal drag-to-Applications build for Intel Macs.
+
+Unsigned macOS test builds are marked `-unsigned`. Signed and notarized builds require the Apple secrets described below.
 
 ## Quick Start
 
-1. Download the latest Windows build from Releases.
+1. Download the latest build for your Windows PC or Mac from Releases.
 2. Open Wallwize.
 3. Click **Choose Folder** and select your wallpaper folder.
 4. Click **Categorize** to scan and suggest folders.
@@ -81,6 +85,8 @@ Release builds include:
 6. Click **Organize** when you are happy with the plan.
 
 By default, Wallwize copies files into the output folder. Your original collection is kept untouched unless you explicitly switch to move mode.
+
+On macOS, the first **Set wallpaper** action may ask for permission to control System Events. Allow Wallwize under **System Settings → Privacy & Security → Automation**. Wallwize uses that permission only when you explicitly request a desktop wallpaper change.
 
 ## What Wallwize Looks For
 
@@ -153,7 +159,7 @@ Requirements:
 
 - Python 3.10+
 - Node.js 22.12+
-- Windows for desktop packaging
+- Windows for Windows packaging, or macOS for macOS packaging
 
 Run the app locally:
 
@@ -218,6 +224,8 @@ wallwize plan index.json "D:\Wallpapers Sorted" -o plan.json --mode move
 
 ## Building Release Files
 
+### Windows
+
 From the repository root:
 
 ```powershell
@@ -233,6 +241,32 @@ Release assets are written to:
 ```text
 release-bundles/github-release-assets/
 ```
+
+### macOS
+
+Build the native Python backend and the DMG on the Mac architecture you are targeting:
+
+```bash
+python3 -m pip install pyinstaller
+python3 -m pip install -e .
+python3 -m PyInstaller --noconfirm --distpath build/backend-dist --workpath build/backend-work packaging/wallwize-backend.spec
+npm --prefix UI ci
+npm run release:mac -- --arm64
+```
+
+Use `--x64` instead of `--arm64` on an Intel Mac.
+
+The `Desktop Release` GitHub Actions workflow builds both architectures natively. Add these repository secrets to enable automatic Developer ID signing and Apple notarization:
+
+```text
+CSC_LINK
+CSC_KEY_PASSWORD
+APPLE_API_KEY
+APPLE_API_KEY_ID
+APPLE_API_ISSUER
+```
+
+Without all five secrets, the workflow still creates testable macOS artifacts and labels their filenames `-unsigned`.
 
 ## Roadmap
 
@@ -270,7 +304,7 @@ src/wallwize/
 
 UI/
   app/             React renderer
-  electron/        desktop shell, local bridge, Windows wallpaper actions
+  electron/        desktop shell, local bridge, Windows and macOS wallpaper actions
   styles/          Wallwize design system and app styling
 
 packaging/         PyInstaller backend packaging

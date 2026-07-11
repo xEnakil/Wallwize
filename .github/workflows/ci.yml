@@ -53,3 +53,61 @@ jobs:
       - name: Build desktop renderer
         working-directory: UI
         run: npm run build
+
+      - name: Check Electron main-process syntax
+        run: node --check UI/electron/main.cjs
+
+  macos-package-smoke:
+    name: macOS package smoke test
+    runs-on: macos-15
+
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12"
+          cache: npm
+          cache-dependency-path: UI/package-lock.json
+
+      - name: Install backend and packaging tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+          python -m pip install -e .
+
+      - name: Run backend tests
+        run: python -m unittest discover -s tests
+
+      - name: Build native macOS backend
+        run: python -m PyInstaller --noconfirm --distpath build/backend-dist --workpath build/backend-work packaging/wallwize-backend.spec
+
+      - name: Install desktop dependencies
+        working-directory: UI
+        run: npm ci
+
+      - name: Compile macOS wallpaper integration
+        run: osacompile -o /tmp/wallwize-set-wallpaper.scpt UI/electron/set-wallpaper.applescript
+
+      - name: Build unsigned macOS app bundle
+        working-directory: UI
+        run: npm run bundle:mac:dir -- --arm64 -c.mac.notarize=false
+
+      - name: Verify packaged backend
+        shell: bash
+        run: |
+          app_path="$(find UI/release -maxdepth 2 -type d -name 'Wallwize.app' -print -quit)"
+          test -n "$app_path"
+          backend_path="$app_path/Contents/Resources/backend/bin/wallwize-backend"
+          test -x "$backend_path"
+          "$backend_path" --help >/dev/null

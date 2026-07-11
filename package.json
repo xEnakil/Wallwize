@@ -4,7 +4,8 @@
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
-    "release:win": "powershell -ExecutionPolicy Bypass -File ./scripts/build-release.ps1"
+    "release:win": "powershell -ExecutionPolicy Bypass -File ./scripts/build-release.ps1",
+    "release:mac": "npm --prefix UI run bundle:mac --"
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1"

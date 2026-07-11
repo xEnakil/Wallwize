@@ -88,6 +88,7 @@ export function createDemoApi(): WallwizeDesktopApi {
   };
 
   return {
+    platform: 'win32',
     async getState() {
       return cloneState(state);
     },

@@ -80,6 +80,7 @@ export interface BusyTask {
 }
 
 export interface WallwizeDesktopApi {
+  platform: 'win32' | 'darwin' | 'linux';
   getState(): Promise<WallwizeAppState>;
   chooseFolder(kind: 'source' | 'output'): Promise<WallwizeAppState>;
   updateSettings(settings: Partial<WallwizeSettings>): Promise<WallwizeAppState>;
