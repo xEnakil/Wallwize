@@ -1,137 +1,88 @@
-import { Maximize2, Minus, Moon, Sun, X } from 'lucide-react';
+import { motion } from 'motion/react';
+import { springs } from '../material/motion';
+import { usePrefersReducedMotion } from '../material/expressive';
 
 interface TitleBarProps {
   isDark: boolean;
   onToggleTheme: () => void;
 }
 
-const wallwizeSymbolSrc = './assets/icons/wallwize-symbol-transparent-consistent.svg';
+type WindowCommand = 'minimize' | 'maximize' | 'close';
 
-export function TitleBar({ isDark, onToggleTheme }: TitleBarProps) {
-  const runCommand = (command: 'minimize' | 'maximize' | 'close') => {
+interface WindowControlProps {
+  command: WindowCommand;
+  icon: string;
+  label: string;
+  destructive?: boolean;
+}
+
+function WindowControl({ command, icon, label, destructive = false }: WindowControlProps) {
+  const runCommand = () => {
     void window.wallwize?.windowCommand(command);
   };
 
   return (
-    <div
-      className="wallwize-titlebar grid h-11 shrink-0 grid-cols-[auto_1fr_auto] items-center"
-      style={{
-        background: 'var(--w-bg-surface)',
-        borderBottom: '1px solid var(--w-border-default)',
-      }}
+    <button
+      type="button"
+      onClick={runCommand}
+      aria-label={label}
+      title={label}
+      className={`grid h-full w-11 place-items-center text-[var(--md-sys-color-on-surface-variant)] transition-colors duration-150 ${
+        destructive
+          ? 'hover:bg-[var(--md-sys-color-error)] hover:text-[var(--md-sys-color-on-error)]'
+          : 'hover:bg-[var(--md-sys-color-surface-container-highest)]'
+      }`}
     >
-      {/* Logo & wordmark */}
-      <div className="wallwize-titlebar-drag flex h-full min-w-0 items-center gap-3 px-4">
-        <div
-          className="grid size-[26px] shrink-0 place-items-center rounded-lg text-white"
-          style={{
-            background: 'linear-gradient(135deg, var(--w-iris-dim) 0%, var(--w-iris-bright) 100%)',
-            boxShadow: '0 2px 8px var(--w-iris-glow)',
-          }}
-        >
-          <img
-            src={wallwizeSymbolSrc}
-            alt=""
-            aria-hidden="true"
-            className="size-[18px]"
-            draggable={false}
-          />
-        </div>
+      <span className="material-symbols-rounded text-[17px] leading-none" aria-hidden="true">
+        {icon}
+      </span>
+    </button>
+  );
+}
 
-        <div className="flex items-baseline gap-2">
-          <span
-            className="text-[13px] font-semibold tracking-tight"
-            style={{ color: 'var(--w-text-100)' }}
-          >
-            Wallwize
-          </span>
-          <span
-            className="rounded px-1.5 py-px text-[10px] font-semibold"
-            style={{
-              color: 'var(--w-text-40)',
-              background: 'var(--w-bg-interactive)',
-              border: '1px solid var(--w-border-default)',
-              letterSpacing: '0.03em',
-            }}
-          >
-            0.8
-          </span>
-        </div>
+export function TitleBar({ isDark, onToggleTheme }: TitleBarProps) {
+  const reduced = usePrefersReducedMotion();
+
+  return (
+    <header
+      className="wallwize-titlebar grid h-10 shrink-0 grid-cols-[auto_1fr_auto] items-center"
+      style={{ background: 'transparent', color: 'var(--md-sys-color-on-surface)' }}
+    >
+      <div className="wallwize-titlebar-drag flex h-full items-center pl-5 pr-4">
+        <span className="ww-wordmark select-none" aria-label="Wallwize">
+          Wallwize
+        </span>
       </div>
 
       <div className="wallwize-titlebar-drag h-full min-w-0" aria-hidden="true" />
 
-      {/* Right side controls */}
       <div className="wallwize-window-controls flex h-full items-center">
-        {/* Theme toggle */}
         <button
           type="button"
           onClick={onToggleTheme}
-          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-          className="grid h-full w-10 place-items-center transition-all"
-          style={{ color: 'var(--w-text-40)', opacity: 0.8 }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--w-text-70)'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--w-text-40)'; }}
+          aria-label={isDark ? 'Use light theme' : 'Use dark theme'}
+          title={isDark ? 'Use light theme' : 'Use dark theme'}
+          className="ww-icon-button mr-1 grid size-8 place-items-center overflow-hidden rounded-full"
+          style={{ color: 'var(--md-sys-color-on-surface-variant)' }}
         >
-          {isDark
-            ? <Sun className="size-[15px]" />
-            : <Moon className="size-[15px]" />
-          }
+          <motion.span
+            key={isDark ? 'dark' : 'light'}
+            initial={reduced ? false : { rotate: -90, scale: 0.4, opacity: 0 }}
+            animate={{ rotate: 0, scale: 1, opacity: 1 }}
+            transition={springs.bouncy}
+            className="material-symbols-rounded text-[18px] leading-none"
+            aria-hidden="true"
+          >
+            {isDark ? 'light_mode' : 'dark_mode'}
+          </motion.span>
         </button>
 
-        {/* Divider */}
-        <div
-          className="mx-1"
-          style={{ width: 1, height: 16, background: 'var(--w-border-default)' }}
-        />
+        <div className="mx-1 h-4 w-px" style={{ background: 'var(--md-sys-color-outline-variant)' }} aria-hidden="true" />
 
-        {/* Minimize */}
-        <button
-          type="button"
-          aria-label="Minimize"
-          onClick={() => runCommand('minimize')}
-          className="grid h-full w-11 place-items-center transition-colors"
-          style={{ color: 'var(--w-text-70)' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--w-bg-interactive)'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-        >
-          <Minus className="size-3.5" />
-        </button>
-
-        {/* Maximize */}
-        <button
-          type="button"
-          aria-label="Maximize"
-          onClick={() => runCommand('maximize')}
-          className="grid h-full w-11 place-items-center transition-colors"
-          style={{ color: 'var(--w-text-70)' }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--w-bg-interactive)'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-        >
-          <Maximize2 className="size-3" />
-        </button>
-
-        {/* Close */}
-        <button
-          type="button"
-          aria-label="Close"
-          onClick={() => runCommand('close')}
-          className="grid h-full w-11 place-items-center transition-all"
-          style={{ color: 'var(--w-text-70)' }}
-          onMouseEnter={(e) => {
-            const btn = e.currentTarget as HTMLButtonElement;
-            btn.style.background = 'var(--w-rose)';
-            btn.style.color = 'white';
-          }}
-          onMouseLeave={(e) => {
-            const btn = e.currentTarget as HTMLButtonElement;
-            btn.style.background = 'transparent';
-            btn.style.color = 'var(--w-text-70)';
-          }}
-        >
-          <X className="size-4" />
-        </button>
+        <WindowControl command="minimize" icon="remove" label="Minimize" />
+        <WindowControl command="maximize" icon="crop_square" label="Maximize or restore" />
+        <WindowControl command="close" icon="close" label="Close" destructive />
       </div>
-    </div>
+    </header>
   );
 }
