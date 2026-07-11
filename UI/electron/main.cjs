@@ -526,16 +526,34 @@ function buildCategories(wallpapers, manualCategories = []) {
 function resolvePythonCommand() {
   if (process.env.WALLWIZE_BACKEND_EXE) return { command: process.env.WALLWIZE_BACKEND_EXE, prefix: [] };
 
-  const bundledBackend = path.join(projectRoot, 'wallwize-backend.exe');
-  const devBackend = path.join(projectRoot, 'build', 'backend-dist', 'wallwize-backend.exe');
-  if (fs.existsSync(bundledBackend)) return { command: bundledBackend, prefix: [] };
+  const backendName = process.platform === 'win32' ? 'wallwize-backend.exe' : 'wallwize-backend';
+  const bundledBackends = [
+    path.join(projectRoot, 'bin', backendName),
+    // Compatibility with Windows packages created before the cross-platform layout.
+    path.join(projectRoot, backendName),
+  ];
+  const devBackend = path.join(projectRoot, 'build', 'backend-dist', backendName);
+  const bundledBackend = bundledBackends.find((candidate) => fs.existsSync(candidate));
+  if (bundledBackend) return { command: bundledBackend, prefix: [] };
   if (fs.existsSync(devBackend)) return { command: devBackend, prefix: [] };
 
   const candidates = [
     process.env.WALLWIZE_PYTHON,
-    path.join(os.homedir(), '.cache', 'codex-runtimes', 'codex-primary-runtime', 'dependencies', 'python', 'python.exe'),
-    'python',
-    'py',
+    ...(process.platform === 'win32'
+      ? [
+          path.join(
+            os.homedir(),
+            '.cache',
+            'codex-runtimes',
+            'codex-primary-runtime',
+            'dependencies',
+            'python',
+            'python.exe'
+          ),
+          'python',
+          'py',
+        ]
+      : ['python3', 'python']),
   ].filter(Boolean);
 
   return { command: candidates[0], prefix: ['-m', 'wallwize'] };
@@ -623,6 +641,29 @@ function runPowerShell(args, envPatch = {}) {
   });
 }
 
+function runAppleScriptFile(scriptPath, scriptArgs = []) {
+  return new Promise((resolve, reject) => {
+    const child = spawn('osascript', [scriptPath, ...scriptArgs], {
+      env: process.env,
+    });
+
+    let stdout = '';
+    let stderr = '';
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      const output = [stdout.trim(), stderr.trim()].filter(Boolean).join('\n');
+      if (code === 0) resolve(output);
+      else reject(new Error(output || `AppleScript exited with code ${code}`));
+    });
+  });
+}
+
 async function setWindowsDesktopWallpaper(targetPath) {
   const wallpaperPath = normalizeExistingFile(targetPath, 'Wallpaper file');
   const script = `
@@ -660,6 +701,30 @@ Write-Output "Desktop wallpaper applied: $wallpaperPath"
     '-Command',
     script,
   ], { WALLWIZE_WALLPAPER_PATH: wallpaperPath });
+}
+
+async function setMacDesktopWallpaper(targetPath) {
+  const wallpaperPath = normalizeExistingFile(targetPath, 'Wallpaper file');
+  const scriptPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'scripts', 'set-wallpaper.applescript')
+    : path.join(__dirname, 'set-wallpaper.applescript');
+  try {
+    return await runAppleScriptFile(scriptPath, [wallpaperPath]);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/not authorized|not allowed|-1743/i.test(message)) {
+      throw new Error(
+        'macOS blocked the wallpaper change. Allow Wallwize in System Settings > Privacy & Security > Automation, then try again.'
+      );
+    }
+    throw error;
+  }
+}
+
+async function setDesktopWallpaper(targetPath) {
+  if (process.platform === 'win32') return setWindowsDesktopWallpaper(targetPath);
+  if (process.platform === 'darwin') return setMacDesktopWallpaper(targetPath);
+  throw new Error('Setting the desktop wallpaper is currently supported on Windows and macOS.');
 }
 
 function uniquePath(destination) {
@@ -978,12 +1043,14 @@ function resolveAppIconPath() {
 
 function createWindow() {
   const iconPath = resolveAppIconPath();
+  const isMac = process.platform === 'darwin';
   const win = new BrowserWindow({
     width: 1440,
     height: 920,
     minWidth: 1100,
     minHeight: 720,
-    frame: false,
+    frame: isMac,
+    ...(isMac ? { titleBarStyle: 'hiddenInset' } : {}),
     autoHideMenuBar: true,
     backgroundColor: '#141414',
     title: 'Wallwize 0.8',
@@ -1138,11 +1205,7 @@ ipcMain.handle('wallwize:set-desktop-wallpaper', async (_event, primaryPath, fal
   if (!targetPath) {
     throw new Error('Wallpaper file was not found. If you moved files, rescan and categorize again.');
   }
-  if (process.platform !== 'win32') {
-    throw new Error('Setting the desktop wallpaper is currently implemented for Windows.');
-  }
-
-  const output = await setWindowsDesktopWallpaper(targetPath);
+  const output = await setDesktopWallpaper(targetPath);
   persistPartial({
     status: `Desktop wallpaper applied: ${path.basename(targetPath)}`,
     lastCommandOutput: output,
@@ -1152,9 +1215,25 @@ ipcMain.handle('wallwize:set-desktop-wallpaper', async (_event, primaryPath, fal
 
 app.whenReady().then(() => {
   ensureDirs();
-  app.setAppUserModelId('app.wallwize.desktop');
-  Menu.setApplicationMenu(null);
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('app.wallwize.desktop');
+    Menu.setApplicationMenu(null);
+  } else if (process.platform === 'darwin') {
+    Menu.setApplicationMenu(
+      Menu.buildFromTemplate([
+        { role: 'appMenu' },
+        { role: 'fileMenu' },
+        { role: 'editMenu' },
+        { role: 'viewMenu' },
+        { role: 'windowMenu' },
+      ])
+    );
+  }
   createWindow();
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
 app.on('window-all-closed', () => {

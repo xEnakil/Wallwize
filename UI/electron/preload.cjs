@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('wallwize', {
+  platform: process.platform,
   getState: () => ipcRenderer.invoke('wallwize:get-state'),
   chooseFolder: (kind) => ipcRenderer.invoke('wallwize:choose-folder', kind),
   updateSettings: (settings) => ipcRenderer.invoke('wallwize:update-settings', settings),

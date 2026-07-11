@@ -19,6 +19,8 @@
     "bundle": "npm run build && electron-builder --win nsis portable",
     "bundle:installer": "npm run build && electron-builder --win nsis",
     "bundle:portable": "npm run build && electron-builder --win portable",
+    "bundle:mac": "npm run build && electron-builder --mac dmg zip",
+    "bundle:mac:dir": "npm run build && electron-builder --mac dir",
     "exe": "npm run bundle"
   },
   "dependencies": {
@@ -113,12 +115,20 @@
         "to": "backend/pyproject.toml"
       },
       {
-        "from": "../build/backend-dist/wallwize-backend.exe",
-        "to": "backend/wallwize-backend.exe"
+        "from": "../build/backend-dist",
+        "to": "backend/bin",
+        "filter": [
+          "wallwize-backend",
+          "wallwize-backend.exe"
+        ]
       },
       {
         "from": "../assets",
         "to": "assets"
+      },
+      {
+        "from": "electron/set-wallpaper.applescript",
+        "to": "scripts/set-wallpaper.applescript"
       }
     ],
     "win": {
@@ -138,6 +148,32 @@
         }
       ],
       "signAndEditExecutable": false
+    },
+    "mac": {
+      "icon": "../assets/icons/wallwize-icon-1024-consistent.svg",
+      "category": "public.app-category.utilities",
+      "hardenedRuntime": true,
+      "entitlements": "../packaging/entitlements.mac.plist",
+      "extendInfo": {
+        "NSAppleEventsUsageDescription": "Wallwize uses macOS automation only when you ask it to set an image as your desktop wallpaper."
+      },
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "Wallwize ${version}-${arch}.${ext}"
     },
     "nsis": {
       "artifactName": "Wallwize Setup ${version}.${ext}",

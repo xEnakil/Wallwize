@@ -42,13 +42,16 @@ function WindowControl({ command, icon, label, destructive = false }: WindowCont
 
 export function TitleBar({ isDark, onToggleTheme }: TitleBarProps) {
   const reduced = usePrefersReducedMotion();
+  const isMac = window.wallwize?.platform === 'darwin';
 
   return (
     <header
       className="wallwize-titlebar grid h-10 shrink-0 grid-cols-[auto_1fr_auto] items-center"
       style={{ background: 'transparent', color: 'var(--md-sys-color-on-surface)' }}
     >
-      <div className="wallwize-titlebar-drag flex h-full items-center pl-5 pr-4">
+      <div
+        className={`wallwize-titlebar-drag flex h-full items-center pr-4 ${isMac ? 'pl-20' : 'pl-5'}`}
+      >
         <span className="ww-wordmark select-none" aria-label="Wallwize">
           Wallwize
         </span>
@@ -77,11 +80,18 @@ export function TitleBar({ isDark, onToggleTheme }: TitleBarProps) {
           </motion.span>
         </button>
 
-        <div className="mx-1 h-4 w-px" style={{ background: 'var(--md-sys-color-outline-variant)' }} aria-hidden="true" />
-
-        <WindowControl command="minimize" icon="remove" label="Minimize" />
-        <WindowControl command="maximize" icon="crop_square" label="Maximize or restore" />
-        <WindowControl command="close" icon="close" label="Close" destructive />
+        {!isMac ? (
+          <>
+            <div
+              className="mx-1 h-4 w-px"
+              style={{ background: 'var(--md-sys-color-outline-variant)' }}
+              aria-hidden="true"
+            />
+            <WindowControl command="minimize" icon="remove" label="Minimize" />
+            <WindowControl command="maximize" icon="crop_square" label="Maximize or restore" />
+            <WindowControl command="close" icon="close" label="Close" destructive />
+          </>
+        ) : null}
       </div>
     </header>
   );

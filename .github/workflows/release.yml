@@ -1,4 +1,4 @@
-name: Windows Release
+name: Desktop Release
 
 on:
   push:
@@ -25,14 +25,52 @@ permissions:
   contents: write
 
 jobs:
-  build-windows:
-    name: Build Windows release
-    runs-on: windows-latest
+  metadata:
+    name: Resolve release metadata
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      tag: ${{ steps.meta.outputs.tag }}
+      draft: ${{ steps.meta.outputs.draft }}
+      prerelease: ${{ steps.meta.outputs.prerelease }}
 
     env:
       REQUESTED_TAG: ${{ inputs.tag || '' }}
       RELEASE_DRAFT: ${{ inputs.draft || false }}
       RELEASE_PRERELEASE: ${{ inputs.prerelease || false }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve metadata
+        id: meta
+        shell: bash
+        run: |
+          version="$(node -p "require('./UI/package.json').version")"
+
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "$REQUESTED_TAG" ]]; then
+            tag="$REQUESTED_TAG"
+          elif [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            tag="$GITHUB_REF_NAME"
+          else
+            tag="v$version"
+          fi
+
+          if [[ "$tag" != v* ]]; then
+            tag="v$tag"
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "draft=$RELEASE_DRAFT" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$RELEASE_PRERELEASE" >> "$GITHUB_OUTPUT"
+
+  build-windows:
+    name: Build Windows release
+    needs: metadata
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -50,77 +88,171 @@ jobs:
           cache: npm
           cache-dependency-path: UI/package-lock.json
 
-      - name: Resolve release metadata
-        id: meta
-        shell: pwsh
-        run: |
-          $version = (Get-Content -Raw UI/package.json | ConvertFrom-Json).version
-
-          if ($env:GITHUB_EVENT_NAME -eq "workflow_dispatch" -and -not [string]::IsNullOrWhiteSpace($env:REQUESTED_TAG)) {
-            $tag = $env:REQUESTED_TAG
-          }
-          elseif ($env:GITHUB_REF_TYPE -eq "tag") {
-            $tag = $env:GITHUB_REF_NAME
-          }
-          else {
-            $tag = "v$version"
-          }
-
-          if ($tag -notmatch "^v") {
-            $tag = "v$tag"
-          }
-
-          "version=$version" >> $env:GITHUB_OUTPUT
-          "tag=$tag" >> $env:GITHUB_OUTPUT
-
       - name: Build release bundles
         shell: pwsh
         run: .\scripts\build-release.ps1 -Python python -ReleaseRoot release-bundles
 
-      - name: Upload workflow artifact
+      - name: Upload Windows workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: wallwize-${{ steps.meta.outputs.version }}-windows
+          name: wallwize-${{ needs.metadata.outputs.version }}-windows
           path: release-bundles/github-release-assets/*
           if-no-files-found: error
 
+  build-macos:
+    name: Build macOS ${{ matrix.arch }} release
+    needs: metadata
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+          - arch: x64
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
+
+    env:
+      CSC_LINK: ${{ secrets.CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+      APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+      APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12"
+          cache: npm
+          cache-dependency-path: UI/package-lock.json
+
+      - name: Install backend and packaging tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+          python -m pip install -e .
+
+      - name: Run backend tests
+        run: python -m unittest discover -s tests
+
+      - name: Build native macOS backend
+        run: python -m PyInstaller --noconfirm --distpath build/backend-dist --workpath build/backend-work packaging/wallwize-backend.spec
+
+      - name: Verify backend architecture
+        shell: bash
+        run: |
+          test -x build/backend-dist/wallwize-backend
+          file build/backend-dist/wallwize-backend
+          build/backend-dist/wallwize-backend --help >/dev/null
+
+      - name: Install desktop dependencies
+        working-directory: UI
+        run: npm ci
+
+      - name: Compile macOS wallpaper integration
+        run: osacompile -o /tmp/wallwize-set-wallpaper.scpt UI/electron/set-wallpaper.applescript
+
+      - name: Detect Apple signing credentials
+        id: signing
+        shell: bash
+        run: |
+          if [[ -n "$CSC_LINK" && -n "$CSC_KEY_PASSWORD" && -n "$APPLE_API_KEY" && -n "$APPLE_API_KEY_ID" && -n "$APPLE_API_ISSUER" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build, sign, and notarize macOS release
+        if: steps.signing.outputs.enabled == 'true'
+        working-directory: UI
+        run: npm run bundle:mac -- --${{ matrix.arch }} -c.mac.notarize=true
+
+      - name: Build unsigned macOS test release
+        if: steps.signing.outputs.enabled != 'true'
+        working-directory: UI
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npm run bundle:mac -- --${{ matrix.arch }} -c.mac.notarize=false
+
+      - name: Label unsigned artifacts
+        if: steps.signing.outputs.enabled != 'true'
+        shell: bash
+        run: |
+          shopt -s nullglob
+          for file in UI/release/*.dmg UI/release/*.zip; do
+            mv "$file" "${file%.*}-unsigned.${file##*.}"
+          done
+
+      - name: Upload macOS workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wallwize-${{ needs.metadata.outputs.version }}-macos-${{ matrix.arch }}
+          path: |
+            UI/release/*.dmg
+            UI/release/*.zip
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release
+    needs:
+      - metadata
+      - build-windows
+      - build-macos
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download desktop artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wallwize-${{ needs.metadata.outputs.version }}-*
+          path: release-assets
+          merge-multiple: true
+
       - name: Publish GitHub Release
-        shell: pwsh
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ steps.meta.outputs.tag }}
-          RELEASE_VERSION: ${{ steps.meta.outputs.version }}
+          RELEASE_TAG: ${{ needs.metadata.outputs.tag }}
+          RELEASE_VERSION: ${{ needs.metadata.outputs.version }}
+          RELEASE_DRAFT: ${{ needs.metadata.outputs.draft }}
+          RELEASE_PRERELEASE: ${{ needs.metadata.outputs.prerelease }}
         run: |
-          $assets = Get-ChildItem -Path "release-bundles/github-release-assets" -File | ForEach-Object { $_.FullName }
-          if (-not $assets) {
-            throw "No release assets were found."
-          }
+          mapfile -t assets < <(find release-assets -maxdepth 1 -type f -print | sort)
+          if [[ ${#assets[@]} -eq 0 ]]; then
+            echo "No release assets were found." >&2
+            exit 1
+          fi
 
-          $existing = gh release view $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY 2>$null
-          if ($LASTEXITCODE -eq 0) {
-            $uploadArgs = @("release", "upload", $env:RELEASE_TAG) + $assets + @("--repo", $env:GITHUB_REPOSITORY, "--clobber")
-            & gh @uploadArgs
-            exit $LASTEXITCODE
-          }
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+            exit $?
+          fi
 
-          $createArgs = @(
-            "release",
-            "create",
-            $env:RELEASE_TAG
-          ) + $assets + @(
-            "--repo", $env:GITHUB_REPOSITORY,
-            "--target", $env:GITHUB_SHA,
-            "--title", "Wallwize $env:RELEASE_VERSION",
-            "--generate-notes",
-            "--latest"
+          create_args=(
+            release create "$RELEASE_TAG"
+            "${assets[@]}"
+            --repo "$GITHUB_REPOSITORY"
+            --target "$GITHUB_SHA"
+            --title "Wallwize $RELEASE_VERSION"
+            --generate-notes
+            --latest
           )
 
-          if ($env:RELEASE_DRAFT -eq "true") {
-            $createArgs += "--draft"
-          }
+          if [[ "$RELEASE_DRAFT" == "true" ]]; then
+            create_args+=(--draft)
+          fi
 
-          if ($env:RELEASE_PRERELEASE -eq "true") {
-            $createArgs += "--prerelease"
-          }
+          if [[ "$RELEASE_PRERELEASE" == "true" ]]; then
+            create_args+=(--prerelease)
+          fi
 
-          & gh @createArgs
+          gh "${create_args[@]}"
