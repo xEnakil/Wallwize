@@ -1,5 +1,5 @@
-import { ImageIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { MaterialSymbol } from '../material/components';
 import { WallpaperItem } from '../types';
 
 const thumbnailCache = new Map<string, string>();
@@ -77,8 +77,14 @@ export function WallpaperThumbnail({
 
   if (!url) {
     return (
-      <div className={`grid place-items-center bg-[#101010] text-[#404040] ${className}`}>
-        <ImageIcon className="size-7" />
+      <div
+        className={`grid place-items-center ${className}`}
+        style={{
+          background: 'var(--md-sys-color-surface-container-highest)',
+          color: 'var(--md-sys-color-outline)',
+        }}
+      >
+        <MaterialSymbol opticalSize={40}>broken_image</MaterialSymbol>
       </div>
     );
   }
