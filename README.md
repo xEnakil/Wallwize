@@ -8,8 +8,8 @@
   <a href="https://github.com/xEnakil/Wallwize/actions/workflows/release.yml">
     <img alt="Desktop release workflow" src="https://img.shields.io/github/actions/workflow/status/xEnakil/Wallwize/release.yml?style=for-the-badge&label=release%20build&logo=githubactions&logoColor=white">
   </a>
-  <img alt="Version" src="https://img.shields.io/badge/version-0.8.0-6366F1?style=for-the-badge">
-  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-111827?style=for-the-badge&logo=apple&logoColor=white">
+  <img alt="Version" src="https://img.shields.io/badge/version-0.9.0-6366F1?style=for-the-badge">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-111827?style=for-the-badge">
   <img alt="License" src="https://img.shields.io/badge/license-source--available-F59E0B?style=for-the-badge">
 </p>
 
@@ -39,11 +39,18 @@
   </tr>
 </table>
 
-Wallwize is a local-first wallpaper organizer for Windows and macOS. I built it for the kind of wallpaper folder that starts as "a few nice images" and slowly turns into a beautiful, impossible-to-browse pile.
+Wallwize 0.9.0 is a local-first wallpaper organizer for Windows and macOS. It brings a Material 3 Expressive redesign to the kind of wallpaper folder that starts as "a few nice images" and slowly turns into a beautiful, impossible-to-browse pile.
 
-It scans your wallpapers, reads useful visual details, suggests categories, catches duplicates, and creates a safe copy or move plan before anything is organized. The desktop app gives you a calm visual library with confidence scores, review queues, category filters, and quick wallpaper actions.
+It scans your wallpapers, reads useful visual details, suggests categories, catches duplicates, and creates a safe copy or move plan before anything is organized. The desktop app gives you an expressive visual library with confidence scores, review queues, Smart Collections, Rules & AI, category filters, and quick wallpaper actions.
 
 No cloud AI is required. No paid APIs are used. No file is moved unless you ask Wallwize to do it.
+
+## What's New in 0.9.0
+
+- **Material 3 Expressive redesign** - refreshed tonal surfaces, typography, motion, navigation, and a seamless desktop title bar.
+- **Smart Collections, Rules & AI** - dedicated views for managing collections, review workflows, automated rules, and local AI settings.
+- **Review-first library** - bento-style filters, richer category taxonomy, a selection dock, details panels, and confidence-aware review tools.
+- **macOS desktop support** - native release builds for Apple Silicon and Intel Macs, plus a macOS wallpaper action.
 
 ## Highlights
 
@@ -53,7 +60,7 @@ No cloud AI is required. No paid APIs are used. No file is moved unless you ask 
 - Duplicate protection - exact duplicate files are skipped during organizing.
 - Review queue - low-confidence and uncategorized images stay visible for manual review.
 - Safe organization - copy by default, move only when you choose that mode.
-- Desktop + CLI - use the polished app, or script scans and plans from the terminal.
+- Desktop + CLI - use the polished app on Windows or macOS, or script scans and plans from the terminal.
 
 ## Download
 
@@ -67,11 +74,11 @@ The easiest way to try Wallwize is from the GitHub Releases page.
 
 Release builds include:
 
-- `Wallwize Setup 0.8.0.exe` - normal Windows installer with a Windows uninstaller.
-- `Wallwize Portable 0.8.0.exe` - single-file portable app that creates a `Wallwize Portable\Data` folder beside the EXE.
-- `Wallwize Folder Portable 0.8.0.zip` - extractable portable folder; app data, thumbnails, and local AI models stay inside the extracted folder.
-- `Wallwize 0.8.0-arm64.dmg` - normal drag-to-Applications build for Apple Silicon Macs.
-- `Wallwize 0.8.0-x64.dmg` - normal drag-to-Applications build for Intel Macs.
+- A normal Windows installer with a Windows uninstaller.
+- A single-file Windows portable app that creates a `Wallwize Portable\Data` folder beside the EXE.
+- An extractable Windows portable folder; app data, thumbnails, and local AI models stay inside the extracted folder.
+- A drag-to-Applications DMG for Apple Silicon Macs (`arm64`).
+- A drag-to-Applications DMG for Intel Macs (`x64`).
 
 Unsigned macOS test builds are marked `-unsigned`. Signed and notarized builds require the Apple secrets described below.
 
@@ -270,25 +277,16 @@ Without all five secrets, the workflow still creates testable macOS artifacts an
 
 ## Roadmap
 
-Wallwize 0.8.0 is the first public-friendly release. It already works as a local wallpaper organizer, but the next version is where I want the app to feel much more comfortable for daily use.
+Wallwize 0.9.0 is the expressive desktop redesign: a clearer library, stronger review workflows, Smart Collections, Rules & AI, and macOS support. Next, I want to deepen the organization tools rather than add complexity for its own sake.
 
-Planned for 0.9.0:
-
-- Better manual categorizing UI and smoother bulk category changes.
-- Proper duplicate picture review instead of only reporting skipped duplicates.
-- Stronger detection and categorization accuracy.
-- Clearer review tools for low-confidence AI suggestions.
-- More useful category management from inside the desktop app.
-- Better explanations for why a wallpaper landed in a category.
-- More polished empty states, details panels, and keyboard-friendly flows.
-
-Longer term ideas:
+Next ideas:
 
 - More advanced duplicate and near-duplicate comparison.
 - Saved organization presets.
 - Better model download/cache management.
 - Optional custom category prompts.
 - More visual analytics for large wallpaper libraries.
+- More explanations for why a wallpaper landed in a category.
 
 ## Project Structure
 
