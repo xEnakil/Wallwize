@@ -29,6 +29,9 @@ export interface WallpaperItem {
   darkScore: number;
   aiCandidates?: Array<{ category: string; confidence: number; prompt?: string }>;
   filename: string;
+  relativePath?: string;
+  sizeBytes?: number;
+  reason?: string;
   warnings: string[];
   tags: string[];
 }

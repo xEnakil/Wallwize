@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { motion } from 'motion/react';
+import { springs } from './material/motion';
 import { Sidebar } from './components/Sidebar';
 import { LibraryView } from './components/LibraryView';
 import { ReviewQueueView } from './components/ReviewQueueView';
@@ -39,8 +41,26 @@ export default function App() {
   const [state, setState] = useState<WallwizeAppState>(fallbackState);
   const [busyTask, setBusyTask] = useState<BusyTask | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(() => {
+    try {
+      return window.localStorage.getItem('wallwize-color-scheme') !== 'light';
+    } catch {
+      return true;
+    }
+  });
   const busy = busyTask !== null;
+
+  const toggleTheme = useCallback(() => {
+    setIsDark((current) => {
+      const next = !current;
+      try {
+        window.localStorage.setItem('wallwize-color-scheme', next ? 'dark' : 'light');
+      } catch {
+        // Theme persistence is optional when storage is unavailable.
+      }
+      return next;
+    });
+  }, []);
 
   const refresh = useCallback(async () => {
     if (!window.wallwize) {
@@ -215,16 +235,31 @@ export default function App() {
 
   return (
     <div
-      className={`wallwize-window-shell relative size-full overflow-hidden dark${isDark ? '' : ' ww-light'}`}
-      style={{ color: 'var(--w-text-100)', background: 'var(--w-bg-void)' }}
+      className={`wallwize-window-shell relative size-full overflow-hidden ${isDark ? 'dark' : 'ww-light'}`}
+      style={{
+        color: 'var(--md-sys-color-on-surface)',
+        background: 'var(--md-sys-color-surface)',
+      }}
+      aria-busy={busy}
     >
-      <TitleBar isDark={isDark} onToggleTheme={() => setIsDark((d) => !d)} />
-      <div className="flex min-h-0 flex-1" style={{ background: 'var(--w-bg-base)' }}>
+      <TitleBar isDark={isDark} onToggleTheme={toggleTheme} />
+      <div
+        className="flex min-h-0 flex-1"
+        style={{ background: 'var(--md-sys-color-surface)' }}
+      >
         <Sidebar activeView={activeView} onViewChange={setActiveView} stats={state.stats} />
-        {renderView()}
+        <motion.div
+          key={activeView}
+          className="flex min-w-0 flex-1"
+          initial={{ opacity: 0, x: 22, scale: 0.995 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          transition={springs.spatialDefault}
+        >
+          {renderView()}
+        </motion.div>
       </div>
       {busyTask && (
-        <div className="pointer-events-none absolute bottom-6 left-1/2 z-50 w-[400px] max-w-[calc(100%-2rem)] -translate-x-1/2">
+        <div className="pointer-events-none absolute bottom-5 left-[calc(50%+52px)] z-50 w-[390px] max-w-[calc(100%-2rem)] -translate-x-1/2">
           <TaskStatus task={busyTask} />
         </div>
       )}
